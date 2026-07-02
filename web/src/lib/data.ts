@@ -12,7 +12,10 @@
 
 import type { Aggregate, Manifest, Match } from '../types/contract';
 
-const BASE = '/data';
+// import.meta.env.BASE_URL is Vite's configured `base` (e.g. "/lila/"), so the
+// static-JSON "API" resolves correctly whether served from the domain root or a
+// subdirectory. BASE_URL always carries a trailing slash.
+const BASE = `${import.meta.env.BASE_URL}data`;
 
 async function fetchJson<T>(url: string): Promise<T> {
   const res = await fetch(url);

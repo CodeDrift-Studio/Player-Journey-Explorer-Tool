@@ -28,8 +28,9 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 
 - 🟢 **Frontend work (M3–M8) uncommitted** (resolved) — all frontend + minimaps were
   committed in `1eb6b92`; `main` now reflects reality (ROADMAP M7 done).
-- 🔴 **No frontend tests.** Pure `lib/*` and `render/` geometry are untested. → Vitest
-  (ROADMAP M13).
+- 🟡 **Frontend tests are minimal.** Vitest is set up with 20 tests for the pure
+  playback logic (`lib/playback.ts`); `lib/viewport`, `lib/mapCoords`, `lib/format`, and
+  `render/` geometry are still untested (ROADMAP M13).
 - 🔴 **Two pre-existing ESLint errors** (surfaced during P0 #1, not introduced by it):
   `components/ui.tsx:15` (`react-refresh/only-export-components` — mixes a helper with
   component exports) and `hooks/useImage.ts:14` (`react-hooks/set-state-in-effect` —
@@ -39,9 +40,9 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   on discipline; drift is possible. Consider schema-driven codegen if it ever bites (D9).
 - 🟡 **Sidebar has placeholder UI** for the statistics panel and layer toggles — not
   yet functional (ROADMAP M12).
-- 🔴 **No top-level `README.md` / `ARCHITECTURE.md`.** The front door for humans is
-  currently `PROJECT_SUMMARY.md` + this folder (ROADMAP M17). Note: `web/README.md`
-  is still the default Vite template boilerplate.
+- 🟡 **Top-level `README.md` exists; `ARCHITECTURE.md` still absent.** The front door
+  for humans is now `README.md` + this folder (ROADMAP M17 done). `ARCHITECTURE.md`
+  remains optional. Note: `web/README.md` is still the default Vite template boilerplate.
 - 🟢 **Git hygiene: stray commit + tracked local settings** (resolved) — a stray
   commit with a corrupted message (`ix(web):…`) that only committed
   `.claude/settings.local.json` was removed by rewriting the tip onto `c6d0090`
@@ -66,14 +67,16 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 
 ## Performance opportunities
 
-- 🔴 **Playback needs offscreen-canvas caching.** Redrawing all static layers
-  (minimap/grid/full paths) every frame will not hit 60fps on the richest match.
-  Cache static layers to an offscreen canvas and only redraw the moving reveal
-  (ROADMAP M9). Note: `MapViewport` already coalesces redraws through a single rAF.
+- 🟢 **Playback offscreen-canvas caching — measured unnecessary** (resolved). The
+  assumption that full redraws wouldn't hit 60fps did not hold: profiling the heaviest
+  match (Lockdown, 15 players / 1,174 points) in headless Chrome measured `renderScene`
+  at 0.07 ms avg / 0.5 ms max — ≈33× under the 16.7 ms 60 fps budget. Caching was
+  deferred (no perf commit). Revisit only if a future dense overlay changes the budget.
 - 🟡 **Aggregate rendered as raw dots.** A binned/blurred density heatmap would be
   both clearer and cheaper on the densest map/day (ROADMAP M15).
-- 🟡 **Watch per-frame allocations** in the render path once playback lands — avoid
-  building new arrays/objects each frame.
+- 🟢 **Per-frame allocations in the render path — checked** (resolved for now). Playback
+  landed and the measured per-frame cost is negligible; `render/scene.ts` does not build
+  new arrays per frame. Revisit if the render budget tightens.
 
 ## Potential refactors
 
@@ -100,7 +103,9 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 - 🔵 **Aggregate `isBot`** → human-only heatmap toggle (ROADMAP M14, contract change).
 - 🔵 **Colorblind-safe path encoding** — human/bot currently distinguished by
   blue/gray hue alone (ROADMAP M16).
-- 🔵 **Vercel deployment** + CI (ROADMAP M17).
+- ✅ **Deployment** — DONE. Live on Hostinger at https://anantagupta.com/lila/
+  (subdirectory `base: '/lila/'`, ROADMAP M17). No CI/CD yet — releases are a manual
+  `npm run build` + upload of `web/dist/` (a possible future enhancement).
 - 🔵 Possible: compare two matches/days side by side; export a view as an image.
 
 (Tooltip/selection, legend, and the layer-toggle UI are tracked under

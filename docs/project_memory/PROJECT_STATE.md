@@ -7,14 +7,15 @@
 
 ## Current completion percentage
 
-**~60%** of the intended production tool.
+**~70%** of the intended production tool.
 
 - **ETL pipeline: 100%** — complete, verified, frozen, committed.
-- **Frontend: ~50%** — scaffold, data loading, filters, static visualization,
-  polish, **and zoom/pan are done, committed, and building green** (verified
-  2026-07-02; all committed in `1eb6b92`). A stabilization pass fixed the
-  rejected-promise cache bug (`c6d0090`). The remaining headline interaction is
-  **timeline playback**; tooltip/legend/stats-UI/tests/deploy are also outstanding.
+- **Frontend: ~65%** — scaffold, data loading, filters, static visualization,
+  polish, zoom/pan (all `1eb6b92`), the rejected-promise cache fix (`c6d0090`), and
+  now **timeline playback** (`b647707`) are done, committed, and building green
+  (verified 2026-07-02). All three core interactions (filter → visualize → play back)
+  are complete. Remaining is P1 polish: tooltip/selection, legend, stats + layer-toggle
+  UI, and broader unit-test coverage.
 
 ---
 
@@ -55,17 +56,29 @@
 - **Stabilization P0 #1 — Rejected-promise cache fix.** Failed match/aggregate
   loads no longer poison the cache; a **Retry** button + `dataStore.retry()`
   recover without a page refresh. Committed `c6d0090`. See CHANGELOG.
+- **P0 #3 — Deployment (LIVE).** Configured Vite `base: '/lila/'` for subdirectory
+  hosting, replaced hardcoded `/data` + `/minimaps` with `import.meta.env.BASE_URL`,
+  rebuilt, and deployed the static build to **Hostinger** at
+  **https://anantagupta.com/lila/**. See "Current deployment status" and CHANGELOG.
+- **M9 — Timeline + playback (P0, Phase A).** Committed `b647707`. Play/pause/scrub/
+  0.5–4× speed, progressive path reveal with partial-segment interpolation + head dot,
+  event reveal, auto-pause at end. Playback runs imperatively (rAF loop in
+  `MapViewport`, pure logic in `lib/playback.ts` with 20 Vitest tests) so it never
+  re-renders the map/filters — only the Timeline. Offscreen-canvas caching deferred as
+  unnecessary after profiling (see CHANGELOG). See ROADMAP M9 for detail.
 
 ## Remaining milestones
 
 See [ROADMAP.md](ROADMAP.md) for detail. Headline remaining items:
 
-- **P0** Timeline + playback (offscreen-canvas caching for 60fps).
+- **P0** ✅ Timeline + playback — done (`b647707`); offscreen caching deferred
+  (profiled unnecessary).
 - **P1** Hover tooltip + selection; legend; statistics panel + layer-toggle UI;
-  frontend unit tests (Vitest) for pure `lib/*`.
+  broader frontend unit tests (Vitest already set up; playback logic covered).
 - **P2** Aggregate `isBot` (human-only heatmap), heatmap layer, colorblind-safe
   path encoding.
-- **Ship** Deploy to Vercel; write top-level `README.md` + `ARCHITECTURE.md`.
+- **Ship** ✅ Deployed to Hostinger at `/lila/` (2026-07-02); top-level `README.md`
+  written. Optional remaining: `ARCHITECTURE.md`.
 
 ---
 
@@ -103,8 +116,9 @@ web/public/minimaps/*    ← optimized map images
 | State | Zustand | 5.0 |
 | Styling | Tailwind CSS (via `@tailwindcss/vite`) | 4.3 |
 | Lint | ESLint + typescript-eslint | 10 / 8.6 |
+| Test | Vitest (pure-logic units) | 4.1 |
 | Node | Node.js | 22.18 |
-| Deploy target | Vercel (static) | not yet |
+| Deploy target | Hostinger (static, `/lila/` subdirectory) | **live** |
 
 ## Important design decisions
 
@@ -140,23 +154,39 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 ## Current deployment status
 
-**Deploy-ready; hosted connect pending.** (P0 #3, 2026-07-02.)
+**LIVE.** (P0 #3 — deployment, completed 2026-07-02.)
 
-- **Platform:** Vercel, static (no backend, no env vars). Root Directory = `web`;
-  Vite auto-detected (build `npm run build`, output `dist`). No `vercel.json` needed.
-- **Public URL:** _pending_ — the authenticated Vercel import cannot be run from the
-  headless dev environment; it is a one-time manual connect (see README → Deployment).
-  Record the URL here and in README once live.
-- **Deploy date:** _pending connect_ (readiness completed 2026-07-02).
-- **Readiness verified 2026-07-02:** `npm run build` green, zero warnings; a local
-  `vite preview` served `/`, `/data/manifest.json`, `/data/matches/{id}.json`,
-  `/data/aggregate/{map}_{date}.json`, `/minimaps/*.png`, `/favicon.svg` — all 200,
-  correct content-types, same-origin (no CORS).
-- **Key deploy decision:** the ETL JSON (`web/public/data/*`, ~5.9 MB, 812 files) is
-  now **committed** (previously gitignored) so it ships as static assets — the build
-  does not run Python. Minimaps were already committed.
-- **Assumptions:** deployed at the domain root (absolute `/data` + `/minimaps` paths
-  assume no sub-path base); no CI/CD yet (push-to-deploy via Vercel's Git integration).
+- **Live URL:** **https://anantagupta.com/lila/** — hosted on **Hostinger** (static
+  file hosting).
+- **Platform:** Hostinger, static (no backend, no env vars). The production build
+  (`web/dist`) is uploaded into the `lila/` directory under the domain's web root.
+- **Subdirectory hosting (the key deploy fact):** the app is served from **`/lila/`,
+  not the domain root**. `web/vite.config.ts` sets **`base: '/lila/'`**, so every
+  emitted asset URL (JS/CSS/favicon in `index.html`) and every runtime data/minimap
+  fetch is prefixed with `/lila/`. App code reads Vite's `import.meta.env.BASE_URL`
+  (in `lib/data.ts` and `components/MapViewport.tsx`) instead of the old hardcoded
+  `/data` and `/minimaps` root-relative paths.
+- **Deploy date:** 2026-07-02.
+- **Deploy method:** **manual upload** of the `web/dist/` build output to Hostinger
+  (File Manager / SFTP) — there is no Git push-to-deploy or CI/CD. Release = rebuild
+  (`npm run build`) then re-upload the `dist/` tree into `lila/`.
+- **Verified 2026-07-02:** `npm run build` green, zero warnings; the built
+  `index.html` references `/lila/assets/*`, `/lila/favicon.svg`; the bundle resolves
+  data to `/lila/data` and minimaps to `/lila/minimaps`; the live site loads and
+  fetches its data on Hostinger.
+- **Deploy-specific considerations:**
+  - The `/lila/` base is **baked into the build**. Serving from a different path (or
+    the domain root) requires editing `base` in `vite.config.ts` and rebuilding — not
+    just moving files.
+  - The host must serve `lila/index.html` as the **SPA fallback** for unknown
+    `/lila/*` routes.
+  - A full release uploads the entire `dist/` tree into `lila/`: `index.html`,
+    `assets/`, `data/` (`manifest.json` + 796 matches + 15 aggregates), `minimaps/`
+    (3 images), `favicon.svg`.
+- **Data shipping decision (unchanged):** the ETL JSON (`web/public/data/*`, ~5.9 MB,
+  812 files) is **committed** (previously gitignored) so it ships as static assets and
+  is copied into `dist/` at build time — the build runs no Python. Minimaps were
+  already committed.
 
 ## Current branch assumptions
 
@@ -171,9 +201,15 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 ## Last verified working commit
 
-- **`c6d0090` — "fix(web): recover from failed data loads…"** is the current
-  committed, building-green state: ETL (26 tests + 10/10 audit) + full frontend
-  (M3–M8, `1eb6b92`) + the P0 #1 stabilization fix. `npm run build` green.
+- **`b647707` — "feat(playback): implement timeline controls and progressive
+  rendering"** is the latest commit: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix
+  (`c6d0090`) + timeline playback (M9 Phase A). `npm run build` green, 20/20 Vitest
+  tests pass, lint clean on changed files.
+- **Uncommitted in the working tree** (not yet committed — the subdirectory deploy fix
+  and its docs): `base: '/lila/'` in `vite.config.ts`, `import.meta.env.BASE_URL` in
+  `lib/data.ts` (the matching `MapViewport.tsx` line rode into `b647707`), plus these
+  `docs/project_memory/*` + `README.md` updates. This is what the live Hostinger build
+  was produced from.
 - ETL freeze reference point remains `5a9d6bd` (26 tests + 10/10 audit pass).
 - Git history is linear and clean; `.claude/settings.local.json` (a local settings
   file) is now `.gitignore`d and no longer tracked.
@@ -182,9 +218,10 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 (Full list in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).)
 
-- No timeline playback yet — the remaining core interaction. (`playbackStore` is
-  scaffolded and `duration` is wired on match load, but there is no timeline UI,
-  no play loop, and `scene.ts` does not yet render time-bounded.)
+- Timeline playback (M9) is **done for single matches** but is intentionally scoped:
+  playback runs on a synthetic wall-clock (a full match plays over ~8 s at 1× because
+  raw telemetry spans <1 s); aggregate/overview mode has no timeline (controls disabled
+  with a message). Layer toggles affect the canvas but not the playback stat counts.
 - Layer visibility state (`paths/humans/bots/events/heatmap`) exists in
   `filterStore` and `scene.ts` honors it, but there is **no toggle UI** (the
   sidebar shows a "Layers · Statistics — next" placeholder). The `heatmap` flag
@@ -193,7 +230,9 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
   cursor readout).
 - Aggregate points carry no `isBot` flag, so the overview cannot yet filter to
   humans only.
-- No frontend tests.
+- Frontend tests are minimal — Vitest is set up with 20 tests for the pure playback
+  logic (`lib/playback.ts`); other pure modules (`viewport`, `mapCoords`, `format`) are
+  not yet covered (ROADMAP M13).
 - Path color (blue/gray) is not colorblind-safe.
 - Aggregate mode ignores the humans/bots layer toggles (match mode honors them).
 
@@ -201,10 +240,12 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 Stabilization/delivery phase (see the P0 backlog). In order:
 
-1. Correct documentation drift — **in progress (this pass).**
-2. Deploy to Vercel (production build + verified hosted URL).
-3. Aggregate density **heatmap** (Kill/Death/Loot/Traffic) replacing raw dots.
-4. Consistent **humans/bots filtering** in aggregate mode.
-5. **Timeline + playback** with offscreen-canvas caching (the last core interaction).
-6. Viewport performance (cache static layers, cut per-frame allocations).
-7. Then P1: stats panel, legend, tooltips, selection, viewport unit tests.
+1. ✅ Correct documentation drift.
+2. ✅ Deploy (production build + verified live URL) — **live on Hostinger at
+   `/lila/`, 2026-07-02.**
+3. ✅ **Timeline + playback** (the last core interaction) — done `b647707`;
+   offscreen caching profiled and deferred as unnecessary.
+4. **P1 polish (next):** stats panel, legend, tooltips/selection, broader Vitest
+   coverage.
+5. Aggregate density **heatmap** (Kill/Death/Loot/Traffic) replacing raw dots (P2).
+6. Consistent **humans/bots filtering** in aggregate mode (P2).

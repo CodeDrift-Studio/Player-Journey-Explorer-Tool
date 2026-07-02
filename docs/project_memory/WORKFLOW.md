@@ -17,7 +17,7 @@ web/public/data/*.json   +   web/public/minimaps/*   (the static "API")
 Canvas 2D visualization in the browser
         │  [Build — tsc + vite]
         ▼
-web/dist/  →  [Deploy — Vercel static hosting]
+web/dist/  →  [Deploy — Hostinger static hosting, served under /lila/]
 ```
 
 The ETL and the frontend are **separate toolchains** that only meet at the JSON
@@ -104,11 +104,10 @@ npm run preview   # serve the production build locally
 - A green build = typecheck clean + bundle produced. Treat TS errors as build
   failures, not warnings.
 - The ETL has no "build" step; it *is* the build for the data half. Its artifacts
-  live in `web/public/data/`, which is **`.gitignore`d (not committed)** — the
-  frontend fetches them at runtime, so they must be present locally (run the ETL)
-  and made available to any deploy (commit them or generate them in the build — a
-  P0 #3 / deployment decision). The optimized **minimaps `web/public/minimaps/` are
-  committed**.
+  live in `web/public/data/`, which is **now committed** (previously gitignored — the
+  P0 #3 deployment decision) so the frontend has data to fetch at runtime and the
+  build ships it as static assets without running Python. Regenerate via the ETL,
+  never hand-edit. The optimized **minimaps `web/public/minimaps/` are committed** too.
 
 ---
 
@@ -127,14 +126,26 @@ npm run preview   # serve the production build locally
 
 ## 6. Deployment workflow
 
-- **Target:** Vercel, static. Project root for the build is `web/`;
-  build command `npm run build`; output `web/dist`.
-- **Assets:** `web/public/data/*` and `web/public/minimaps/*` are served as static
-  files under `/data` and `/minimaps`. Minimaps are committed; **`data/` is
-  `.gitignore`d**, so a deploy must ensure it is present (commit it for the deploy
-  or generate it in the build). The frontend fetches both at runtime.
-- **No env vars, no secrets, no backend.** A push-to-deploy Vercel project is
-  sufficient. Not yet configured — this is a remaining milestone.
+**Status: LIVE** at **https://anantagupta.com/lila/** (Hostinger, static, 2026-07-02).
+
+- **Target:** **Hostinger**, static hosting. Served from the **`/lila/` subdirectory**,
+  not the domain root.
+- **Subdirectory base path:** `web/vite.config.ts` sets **`base: '/lila/'`**. Vite then
+  prefixes every emitted asset URL with `/lila/`. App code uses
+  **`import.meta.env.BASE_URL`** for runtime fetches — `lib/data.ts` (`/data`) and
+  `components/MapViewport.tsx` (`/minimaps`) — instead of hardcoded root-relative
+  paths, so both resolve under the subdirectory. To change the path (or move to the
+  domain root), edit `base` and rebuild — the base is baked into the build output.
+- **Release procedure (manual — no CI/CD):**
+  1. `cd web && npm run build` → `web/dist`.
+  2. Upload the entire `web/dist/` tree into the `lila/` directory under the domain
+     web root (Hostinger File Manager / SFTP).
+  3. Ensure `lila/index.html` is the SPA fallback for unknown `/lila/*` routes.
+- **Assets:** `web/public/data/*` and `web/public/minimaps/*` are copied into `dist/`
+  at build and fetched at runtime (same-origin, no CORS). **`data/` is now committed**
+  (previously gitignored) so it ships without running the ETL; minimaps were already
+  committed.
+- **No env vars, no secrets, no backend.**
 
 ---
 
@@ -162,8 +173,9 @@ accurate when ETL logic changes.
 2. Install: `cd web && npm install` (frontend); `etl/.venv` already exists for ETL.
 3. Generate the gitignored data: `cd etl && .venv/Scripts/python.exe -m src.main`
    (writes `web/public/data/*`), so the app has something to fetch.
-4. Pick the top P0 from [ROADMAP.md](ROADMAP.md) — currently **deploy** and the
-   aggregate **heatmap** work (frontend M3–M8 are already committed).
+4. Pick the top P0 from [ROADMAP.md](ROADMAP.md) — deployment is **done** (live on
+   Hostinger at `/lila/`); the next active P0 is **M9 — timeline + playback**
+   (frontend M3–M8 are already committed).
 5. Follow the "Adding a feature" path in §3.
 6. On completion, run the documentation continuity step in §7 and commit.
 

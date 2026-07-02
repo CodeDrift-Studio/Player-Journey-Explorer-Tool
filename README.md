@@ -6,7 +6,7 @@ caught by the storm — per single match and aggregated per map/day.
 
 Built as a take-home for a **Product Engineer** role at LILA Games.
 
-> **Live demo:** _deploying to Vercel — public URL pending (see [Deployment](#deployment))._
+> **Live demo:** **https://anantagupta.com/lila/** (static, hosted on Hostinger — see [Deployment](#deployment)).
 
 ---
 
@@ -35,7 +35,7 @@ player_data/ (raw parquet, provided separately, not committed)
 web/public/data/*.json  +  web/public/minimaps/*   (static "API", committed)
    │   web/  — React SPA: fetches JSON, renders to HTML5 Canvas 2D
    ▼
-browser  →  vite build → web/dist  →  Vercel (static hosting)
+browser  →  vite build → web/dist  →  Hostinger (static, served under /lila/)
 ```
 
 - **`etl/`** — Python 3.13 pipeline (pandas, pyarrow). Reads parquet, groups by
@@ -78,16 +78,44 @@ npm run preview    # serve the production build locally
 
 ## Deployment
 
-Static site on **Vercel**, no backend, no environment variables.
+Live at **https://anantagupta.com/lila/** — a static site on **Hostinger**, no
+backend, no environment variables. It is served from the **`/lila/` subdirectory**,
+not the domain root.
 
-1. Import this repository into Vercel.
-2. Set **Root Directory** to `web`. Vercel auto-detects Vite:
-   build command `npm run build`, output directory `dist`.
-3. Deploy. The build copies `web/public/data/*` and `web/public/minimaps/*` into
-   `dist/`, served at `/data` and `/minimaps` — the app fetches them at runtime
-   (same-origin, no CORS).
+**Subdirectory base path.** Because the app is hosted under `/lila/`, `web/vite.config.ts`
+sets:
 
-No `vercel.json` is required — setting Root Directory to `web` is sufficient.
+```ts
+export default defineConfig({
+  base: '/lila/',
+  // ...
+})
+```
+
+`base` prefixes every emitted asset URL (JS/CSS/favicon in `index.html`) with `/lila/`.
+The app's runtime fetches use Vite's **`import.meta.env.BASE_URL`** (in
+[`web/src/lib/data.ts`](web/src/lib/data.ts) for `/data` and
+[`web/src/components/MapViewport.tsx`](web/src/components/MapViewport.tsx) for
+`/minimaps`) rather than hardcoded root-relative paths, so both resolve correctly
+under the subdirectory.
+
+**Release steps:**
+
+1. Build: `cd web && npm run build` → produces `web/dist/`.
+2. Upload the **entire contents of `web/dist/`** into the `lila/` directory under the
+   domain's web root on Hostinger (File Manager or SFTP): `index.html`, `assets/`,
+   `data/` (`manifest.json` + matches + aggregates), `minimaps/`, `favicon.svg`.
+3. Ensure the host serves `lila/index.html` as the SPA fallback for `/lila/*` routes.
+
+**Notes / considerations:**
+
+- The `/lila/` base is **baked into the build** — to host at a different path (or the
+  domain root), change `base` in `vite.config.ts` and rebuild; you cannot just move
+  the files.
+- There is **no CI/CD** — deployment is a manual rebuild + upload.
+- The build copies `web/public/data/*` and `web/public/minimaps/*` into `dist/`; the
+  app fetches them at runtime same-origin (no CORS). The build runs no Python — the
+  ETL JSON is committed and shipped as static assets.
 
 ## Project status
 

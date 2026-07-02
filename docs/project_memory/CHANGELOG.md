@@ -11,8 +11,59 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 
 ## [Unreleased]
 
+### Added
+- **Timeline + playback — ROADMAP M9, Phase A** (2026-07-02, committed `b647707`). The
+  headline single-match interaction: play/pause, scrub, 0.5/1/2/4× speed, progressive
+  path reveal, and event reveal over time.
+  - **`lib/playback.ts`** (new) — pure, unit-tested logic: `clampTime`; `playbackRate`/
+    `advanceTime` mapping wall-clock to telemetry time (a full match plays over ~8 s at
+    1×, because raw telemetry spans <1 s — median 382 ms, max 890 ms — so real-time would
+    be an imperceptible blink); `revealedIndex` (binary search); `pathHead`
+    (partial-segment interpolation so the head moves smoothly between samples);
+    extensible `computePlaybackStats`.
+  - **`render/scene.ts`** — time-bounded reveal: paths draw up to the interpolated head
+    (with a head dot), events appear at their `t`. `time === null` preserves the exact
+    prior whole-match rendering, so aggregate/overview is unchanged.
+  - **`components/Timeline.tsx`** (new) — always-visible footer with the controls, a time
+    readout, and visible/total player + event stats; disabled with an explanatory message
+    in aggregate view ("Playback available for individual matches only.").
+  - **`MapViewport.tsx` / `playbackStore.ts`** — an imperative rAF play loop advances the
+    playhead and drives the canvas via the `sceneRef` mirror + a store subscription, so
+    time advancing ~60×/s never re-renders React. The store clamps time, restarts from 0
+    when Play is pressed at the end, and auto-pauses at the end without rewinding.
+  - **Tooling:** added **Vitest** (20 tests for the pure playback logic) + `test` /
+    `test:watch` scripts; test files excluded from the production `tsc` build.
+  - **Performance — measured, not assumed (headless Chrome, production build).** On the
+    heaviest match (Lockdown, 15 players / 1,174 points / 42 events): `renderScene` cost
+    **0.07 ms avg, 0.1 ms p50, 0.2 ms p95, 0.5 ms max** — ≈33× under the 16.7 ms 60 fps
+    budget; worst single frame interval 17 ms (one startup blip), p95 5.7 ms. During
+    playback, **MapViewport and Sidebar re-rendered 0 times** while only the Timeline
+    re-rendered (~1/frame) — the intended UI/canvas isolation. **Decision: offscreen-canvas
+    caching is NOT needed** (the perf(canvas) commit was planned but is unnecessary);
+    revisit only if a future dense overlay changes the per-frame budget.
+
 ### Deployment
+- **Went LIVE on Hostinger under a `/lila/` subdirectory** (2026-07-02, stabilization
+  P0 #3 — completes deployment). Live URL: **https://anantagupta.com/lila/**.
+  - **Target changed from Vercel → Hostinger static hosting.** The build is uploaded
+    manually into the `lila/` directory under the domain web root (no Git
+    push-to-deploy / CI/CD); release = `npm run build` then re-upload `dist/`.
+  - **Subdirectory hosting:** set **`base: '/lila/'`** in `web/vite.config.ts` so
+    Vite prefixes every emitted asset URL with `/lila/`.
+  - **Path audit + fix (no logic change):** replaced the hardcoded root-relative
+    `/data` (`lib/data.ts`) and `/minimaps` (`components/MapViewport.tsx`) with
+    Vite's **`import.meta.env.BASE_URL`**, so data and minimap fetches resolve under
+    `/lila/` (or any future base) instead of 404-ing at the domain root. `index.html`
+    asset/favicon URLs are rewritten by Vite automatically from `base`.
+  - **Verified:** `npm run build` green (zero warnings); built `index.html` points at
+    `/lila/assets/*` and `/lila/favicon.svg`; bundle resolves `/lila/data` +
+    `/lila/minimaps`; live site loads and fetches its data on Hostinger.
+  - **Deploy considerations:** the `/lila/` base is baked into the build (changing the
+    path requires editing `base` + rebuilding); the host must serve `lila/index.html`
+    as the SPA fallback for `/lila/*` routes.
 - **Made the app deploy-ready for Vercel (static)** (2026-07-02, stabilization P0 #3).
+  *(Superseded by the Hostinger go-live above — retained as history. Original
+  Vercel-oriented readiness notes below.)*
   - **Committed the ETL JSON** (`web/public/data/*`, ~5.9 MB, 812 files) — previously
     gitignored. The dataset is frozen and there is no backend, so the JSON ships as
     static assets; the Vercel build does not run Python.

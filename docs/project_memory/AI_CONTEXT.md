@@ -29,7 +29,7 @@ player_data/ (raw parquet, NOT committed, sibling of the repo)
 web/public/data/*.json  +  web/public/minimaps/*   (static "API")
    │  web/  — React SPA fetches JSON, renders to HTML5 Canvas 2D
    ▼
-browser  →  built with vite  →  web/dist  →  Vercel (static, not yet deployed)
+browser  →  built with vite  →  web/dist  →  Hostinger (static, live at /lila/)
 ```
 
 ## 3. Folder structure
@@ -166,10 +166,11 @@ stabilization pass fixed the rejected-promise cache bug (`c6d0090`). See
 
 ## 12. Pending work
 
-Stabilization/delivery phase. Top of queue: **deploy to Vercel**, the aggregate
-**heatmap** + consistent humans/bots filtering, then **timeline+playback**
-(offscreen caching — the last core interaction), viewport performance, then
-tooltip/selection, legend, stats + layer-toggle UI, frontend tests. Full breakdown
+Stabilization/delivery phase. Deployment is **done** (live on Hostinger at `/lila/`).
+Top of queue: **timeline+playback** (offscreen caching — the last core interaction),
+then the aggregate **heatmap** + consistent humans/bots filtering, viewport
+performance, then tooltip/selection, legend, stats + layer-toggle UI, frontend tests.
+Full breakdown
 in [ROADMAP.md](ROADMAP.md).
 
 ## 13. Known issues

@@ -27,24 +27,46 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
   centralized `lib/viewport.ts` math made it unnecessary). Verified via `npm run build`.
 - **Stabilization P0 #1 — Rejected-promise cache fix.** Done (committed `c6d0090`).
   Cache evicts on failure; Retry button recovers without refresh.
+- **M17 — Deploy (P0 #3).** Done — **LIVE on Hostinger at https://anantagupta.com/lila/**
+  (2026-07-02). Configured `base: '/lila/'` for subdirectory hosting; replaced
+  hardcoded `/data` + `/minimaps` with `import.meta.env.BASE_URL`; rebuilt and
+  uploaded the static `dist/` to Hostinger. See below for detail.
+- **M9 — Timeline + playback (P0).** Done (Phase A, committed `b647707`, 2026-07-02).
+  Play/pause/scrub/0.5–4× speed, progressive path reveal with partial-segment
+  interpolation + head dot, event reveal, auto-pause at end (no rewind), always-visible
+  timeline (disabled in aggregate). Imperative rAF play loop keeps playback off React
+  (measured: 0 MapViewport/Sidebar re-renders during playback). 20 Vitest tests on the
+  pure logic. **Offscreen-canvas caching deferred** — profiling the heaviest match
+  (15 players, 1,174 points) showed `renderScene` at 0.07 ms avg / 0.5 ms max vs the
+  16.7 ms 60 fps budget, so caching is unnecessary (no Commit 2). See below for detail.
 
 ---
 
-## M9 — Timeline + playback  ·  Priority: **P0**  ·  Effort: L (3–5d)
+## M9 — Timeline + playback  ·  Priority: **P0**  ·  Status: ✅ **DONE (Phase A)**
 
 - **Objective:** Scrub/play a single match over time, progressively revealing paths
   and firing event markers — the headline feature.
-- **Files:** new timeline component under `components/` (App footer is currently a
-  `"Timeline — playback milestone"` placeholder); `store/playbackStore.ts`
-  (already scaffolded: `time`/`duration`/`isPlaying`/`speed` + actions;
-  `useSelectedData` already sets `duration` on match load) wired to a play loop;
-  `render/scene.ts` (add a time-bounded reveal — it currently draws whole paths);
-  **offscreen-canvas caching** of static layers for 60fps.
-- **Dependencies:** M8 done (shared viewport transform available); contract already
-  sufficient (`path:[ts,...]`, `events:[{t,...}]`, `startTs`/`endTs`).
-- **Acceptance:** play/pause/scrub/speed controls; paths reveal by `ts`; markers
-  appear at their `t`; sustained ~60fps on the richest match; playback ticks do not
-  re-render the filter UI (verify with React DevTools).
+- **Delivered (committed `b647707`):**
+  - `lib/playback.ts` — pure logic: `clampTime`, `playbackRate`/`advanceTime`
+    (wall-clock↔telemetry mapping; a full match plays over ~8 s at 1× since raw
+    telemetry spans <1 s), `revealedIndex` (binary search), `pathHead` (partial-segment
+    interpolation), extensible `computePlaybackStats`. 20 Vitest tests.
+  - `render/scene.ts` — time-bounded reveal: paths draw to the interpolated head with a
+    head dot; events appear at their `t`. `time === null` keeps the old whole-match draw
+    (aggregate unchanged).
+  - `components/Timeline.tsx` — always-visible footer: play/pause, scrubber, 0.5/1/2/4×
+    speed, time readout, visible/total player+event stats; disabled with a message in
+    aggregate view.
+  - `MapViewport.tsx` — imperative play loop + playback subscription drive the canvas via
+    rAF/`sceneRef`; `playbackStore` clamps time, restarts from 0 on play-at-end, and
+    auto-pauses at the end without rewinding.
+- **Acceptance — met:** play/pause/scrub/speed all work; paths reveal by `ts`, markers by
+  `t`; **measured** on the heaviest match (Lockdown, 15 players / 1,174 points / 42
+  events): `renderScene` 0.07 ms avg, 0.5 ms max (≈33× under the 16.7 ms 60 fps budget);
+  during playback **MapViewport and Sidebar re-render 0 times** while only Timeline
+  re-renders (~1/frame) — the intended UI/render isolation.
+- **Deferred:** offscreen-canvas caching — the measurements show it is unnecessary; revisit
+  only if future work (e.g. a dense heatmap overlay during playback) changes the budget.
 
 ## M10 — Hover tooltip + selection  ·  Priority: **P1**  ·  Effort: M (1–2d)
 
@@ -113,24 +135,31 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 - **Dependencies:** none.
 - **Acceptance:** human/bot distinguishable in a grayscale/deuteranopia simulation.
 
-## M17 — Deploy to Vercel + top-level docs  ·  Priority: **Ship**  ·  Status: **mostly done**
+## M17 — Deploy + top-level docs  ·  Priority: **Ship**  ·  Status: ✅ **DONE (live)**
 
 - **Objective:** Publicly hosted build; a proper front-door README + architecture doc.
-- **Done (P0 #3, 2026-07-02):** top-level `README.md` written (run/build/deploy);
-  ETL JSON committed so it ships as static assets; `index.html` title fixed;
-  production build verified green + endpoints validated via `vite preview`. Deploy
-  is static, Root Directory = `web`, no `vercel.json` needed.
-- **Remaining:** the one-time authenticated **Vercel import** (cannot run headless)
-  → record the live URL in README + PROJECT_STATE. Optional: `ARCHITECTURE.md`
-  (the `docs/project_memory/` KB currently serves this role).
-- **Acceptance:** live URL loads and fetches `/data` + `/minimaps` (validated locally;
-  confirm on the hosted URL post-connect).
+- **Live:** **https://anantagupta.com/lila/** — static hosting on **Hostinger**,
+  served from the **`/lila/` subdirectory** (2026-07-02).
+- **Done:** top-level `README.md` written (run/build/deploy); ETL JSON committed so it
+  ships as static assets; `index.html` title fixed; **`base: '/lila/'` set in
+  `vite.config.ts`** for subdirectory hosting; hardcoded `/data` + `/minimaps`
+  replaced with **`import.meta.env.BASE_URL`** (`lib/data.ts`, `MapViewport.tsx`);
+  production build verified green (built HTML → `/lila/assets/*`, bundle → `/lila/data`
+  + `/lila/minimaps`); `dist/` uploaded to Hostinger and the live site confirmed
+  loading + fetching its data.
+- **Target changed:** originally scoped for Vercel; shipped on Hostinger (manual
+  `dist/` upload, no CI/CD). See PROJECT_STATE → "Current deployment status" and
+  WORKFLOW §6 for the release procedure and deploy considerations.
+- **Optional remaining:** `ARCHITECTURE.md` (the `docs/project_memory/` KB currently
+  serves this role).
+- **Acceptance:** ✅ live URL loads and fetches `/lila/data` + `/lila/minimaps`.
 
 ---
 
 ### Suggested sequence
 
-M7 (commit) and M8 (zoom+pan) are done. Stabilization/delivery order now leads with
-`M17` (deploy) and the heatmap/aggregate-filter work, then `M9` (timeline+playback —
-the last core interaction) → `M10, M11, M12, M13` (P1 polish, parallelizable) →
-`M14, M15, M16` (P2). M11 (legend) can be done anytime.
+M7 (commit), M8 (zoom+pan), **M17 (deploy — live on Hostinger at `/lila/`)**, and
+**M9 (timeline + playback)** are done — the core interactions are complete. Next up is
+the P1 polish tier: `M10, M11, M12, M13` (tooltip/selection, legend, stats + layer-toggle
+UI, Vitest coverage — parallelizable) → `M14, M15, M16` (P2). M11 (legend) can be done
+anytime.

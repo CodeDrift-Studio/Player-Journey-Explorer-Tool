@@ -134,3 +134,27 @@ Future implications.**
   continuity rule in WORKFLOW §7).
 - **Future implications:** The repo stays self-contained and future-proof; any tool
   can resume from `AI_CONTEXT.md` alone.
+
+## D11 — Deploy on Hostinger under a `/lila/` subdirectory (base path)
+
+- **Problem:** The site is hosted at `https://anantagupta.com/lila/`, not a domain
+  root. Root-relative asset and data URLs (`/assets`, `/data`, `/minimaps`,
+  `/favicon.svg`) 404 when the app lives under `/lila/`.
+- **Alternatives:** (a) host at the domain root / a dedicated subdomain; (b) rewrite
+  server paths (Hostinger `.htaccess` rewrites) to fake a root; (c) set Vite's `base`
+  to the subdirectory and let the build emit correctly-prefixed URLs.
+- **Decision:** Set **`base: '/lila/'`** in `web/vite.config.ts` and reference Vite's
+  **`import.meta.env.BASE_URL`** for runtime fetches (`lib/data.ts` → `/data`,
+  `components/MapViewport.tsx` → `/minimaps`) instead of hardcoded root-relative
+  paths. Deploy by uploading `web/dist/` into the `lila/` directory (manual, no CI/CD).
+- **Reason:** `base` is Vite's first-class, framework-supported mechanism for
+  subdirectory hosting — it rewrites `index.html` asset/favicon URLs automatically and
+  exposes the same prefix to app code, so there is a single source of truth and no
+  server-side rewrite hacks. Chosen over changing the hosting location because the
+  `/lila/` path was a fixed requirement.
+- **Trade-offs:** The base path is **baked into the build** — changing the path (or
+  moving to the root) requires editing `base` and rebuilding, not just moving files.
+  The host must also serve `lila/index.html` as the SPA fallback for `/lila/*` routes.
+- **Future implications:** Any new runtime-fetched static asset must be built from
+  `import.meta.env.BASE_URL`, never a leading-slash literal, or it will break under the
+  subdirectory. If the app later moves to a root/subdomain, flip `base` back to `'/'`.
