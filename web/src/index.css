@@ -1,0 +1,17 @@
+/* Tailwind v4: this single import pulls in the framework's base reset,
+   component layer, and all utility classes. No config file needed to start. */
+@import "tailwindcss";
+
+/* Base canvas for the whole app: a dark analytical-dashboard theme.
+   Everything else is styled with Tailwind utility classes on components. */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: #020617; /* slate-950 */
+  color: #e2e8f0;            /* slate-200 */
+}

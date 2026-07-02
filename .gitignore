@@ -1,0 +1,24 @@
+# ── Python (ETL) ──────────────────────────────
+etl/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ── Node / Vite (web) ─────────────────────────
+web/node_modules/
+web/dist/
+*.local
+
+# ── Raw gameplay data (large, provided separately, never committed) ──
+data/
+*.nakama-0
+
+# ── Generated ETL artifacts (rebuilt from raw data) ──
+web/public/data/matches/
+web/public/data/manifest.json
+
+# ── OS / editor cruft ─────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
