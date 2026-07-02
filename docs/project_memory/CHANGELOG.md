@@ -11,6 +11,22 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 
 ## [Unreleased]
 
+### Deployment
+- **Made the app deploy-ready for Vercel (static)** (2026-07-02, stabilization P0 #3).
+  - **Committed the ETL JSON** (`web/public/data/*`, ~5.9 MB, 812 files) — previously
+    gitignored. The dataset is frozen and there is no backend, so the JSON ships as
+    static assets; the Vercel build does not run Python.
+  - Wrote the top-level **`README.md`** (purpose, architecture, run/build/deploy).
+  - Fixed the placeholder `index.html` `<title>` → "LILA BLACK — Player Journey
+    Explorer"; added a description meta.
+  - **Verified:** `npm run build` green, zero warnings; `vite preview` served `/`,
+    `manifest.json`, a match, an aggregate, minimaps, favicon — all HTTP 200, correct
+    content-types, same-origin (no CORS).
+  - **Config:** static deploy, Root Directory = `web`, Vite auto-detected, no
+    `vercel.json`. Domain-root paths (`/data`, `/minimaps`). No env vars.
+  - **Pending:** the one-time authenticated Vercel import (not runnable headless) →
+    record the live URL in README + PROJECT_STATE once connected.
+
 ### Fixed
 - **Rejected-promise cache bug** (2026-07-02, stabilization P0 #1) — `lib/data.ts`
   cached the fetch *promise* unconditionally, so a single failed `loadMatch`/

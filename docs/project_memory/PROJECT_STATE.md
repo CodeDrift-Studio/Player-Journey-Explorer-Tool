@@ -140,9 +140,23 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 ## Current deployment status
 
-**Not deployed.** Target is Vercel as a single static artifact (`web/dist` after
-`npm run build`). No CI/CD configured yet. No environment variables required (the
-app fetches its own static JSON from `/data` and `/minimaps`).
+**Deploy-ready; hosted connect pending.** (P0 #3, 2026-07-02.)
+
+- **Platform:** Vercel, static (no backend, no env vars). Root Directory = `web`;
+  Vite auto-detected (build `npm run build`, output `dist`). No `vercel.json` needed.
+- **Public URL:** _pending_ — the authenticated Vercel import cannot be run from the
+  headless dev environment; it is a one-time manual connect (see README → Deployment).
+  Record the URL here and in README once live.
+- **Deploy date:** _pending connect_ (readiness completed 2026-07-02).
+- **Readiness verified 2026-07-02:** `npm run build` green, zero warnings; a local
+  `vite preview` served `/`, `/data/manifest.json`, `/data/matches/{id}.json`,
+  `/data/aggregate/{map}_{date}.json`, `/minimaps/*.png`, `/favicon.svg` — all 200,
+  correct content-types, same-origin (no CORS).
+- **Key deploy decision:** the ETL JSON (`web/public/data/*`, ~5.9 MB, 812 files) is
+  now **committed** (previously gitignored) so it ships as static assets — the build
+  does not run Python. Minimaps were already committed.
+- **Assumptions:** deployed at the domain root (absolute `/data` + `/minimaps` paths
+  assume no sub-path base); no CI/CD yet (push-to-deploy via Vercel's Git integration).
 
 ## Current branch assumptions
 

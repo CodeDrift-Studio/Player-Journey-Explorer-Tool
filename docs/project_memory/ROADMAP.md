@@ -113,14 +113,18 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 - **Dependencies:** none.
 - **Acceptance:** human/bot distinguishable in a grayscale/deuteranopia simulation.
 
-## M17 — Deploy to Vercel + top-level docs  ·  Priority: **Ship**  ·  Effort: S–M (0.5–1d)
+## M17 — Deploy to Vercel + top-level docs  ·  Priority: **Ship**  ·  Status: **mostly done**
 
 - **Objective:** Publicly hosted build; a proper front-door README + architecture doc.
-- **Files:** Vercel project config (root `web`, output `web/dist`); new top-level
-  `README.md` and `ARCHITECTURE.md`.
-- **Dependencies:** at least M8+M9 for a compelling demo.
-- **Acceptance:** live URL loads and fetches `/data` + `/minimaps`; README covers
-  run/build/deploy; architecture doc links to this knowledge base.
+- **Done (P0 #3, 2026-07-02):** top-level `README.md` written (run/build/deploy);
+  ETL JSON committed so it ships as static assets; `index.html` title fixed;
+  production build verified green + endpoints validated via `vite preview`. Deploy
+  is static, Root Directory = `web`, no `vercel.json` needed.
+- **Remaining:** the one-time authenticated **Vercel import** (cannot run headless)
+  → record the live URL in README + PROJECT_STATE. Optional: `ARCHITECTURE.md`
+  (the `docs/project_memory/` KB currently serves this role).
+- **Acceptance:** live URL loads and fetches `/data` + `/minimaps` (validated locally;
+  confirm on the hosted URL post-connect).
 
 ---
 
