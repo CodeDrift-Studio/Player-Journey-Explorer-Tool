@@ -37,23 +37,23 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
   `ROADMAP.md`, `CHANGELOG.md`, `DECISIONS.md`, `KNOWN_ISSUES.md`. Established the
   continuity rule: update the five state files on every milestone completion.
 
-### Known
-- Frontend work below (scaffold, filters, visualization, polish) is **committed to
-  the working tree but not yet to git** as of this entry. Last committed state is
-  `5a9d6bd` (ETL freeze).
+### Note
+- All frontend work below (scaffold, filters, visualization, polish, zoom/pan) was
+  **committed in `1eb6b92`** alongside this knowledge base. The section headers
+  below are retained as a historical build log; each is now in Git.
 
 ---
 
-## Frontend — Zoom + pan (uncommitted)
+## Frontend — Zoom + pan (committed `1eb6b92`)
 - Wheel-zoom **toward the cursor** (point under the pointer stays fixed) and
   drag-to-pan via pointer capture, in `components/MapViewport.tsx` (local
   `{zoom,panX,panY}` view state, reset on selection change).
 - Transform math in `lib/viewport.ts`: `applyView` (compose zoom+pan over the fit),
   `clampPan` (map can't drift off-screen), `MIN_ZOOM=1`/`MAX_ZOOM=12`, `clamp`.
 - Zoom-% readout + Reset button; drag/grab cursor affordance.
-- Verified green via `npm run build` (2026-07-02). Still uncommitted to git.
+- Verified green via `npm run build` (2026-07-02). Committed in `1eb6b92`.
 
-## Frontend — Batch-1 production polish (uncommitted)
+## Frontend — Batch-1 production polish (committed `1eb6b92`)
 - World-coordinate cursor readout; viewport loading/error states; manifest load
   gate; map `size` sourced from config; focus-visible rings + ARIA; single-point
   player rendering.
@@ -62,13 +62,13 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 - **Fix:** restored synchronous initial canvas sizing instead of waiting for the
   async ResizeObserver callback.
 
-## Frontend — Static visualization (uncommitted)
+## Frontend — Static visualization (committed `1eb6b92`)
 - `render/scene.ts` pure back-to-front Canvas draw: minimap → grid → frame → paths →
   event markers, plus aggregate density dots for the overview.
 - Human (blue) vs bot (gray) paths; markers ✕ kill · ✚ death · ◆ loot · ▲ storm.
 - `render/palette.ts` shared color language.
 
-## Frontend — Sidebar, filters & lazy data loading (uncommitted)
+## Frontend — Sidebar, filters & lazy data loading (committed `1eb6b92`)
 - Segmented Map/Date pickers; searchable, richness-ranked match list with an
   "All matches" aggregate pinned on top; lazy per-selection loading.
 - Stores: `filterStore`, `playbackStore`, `dataStore` (Zustand, selective selectors).
@@ -76,7 +76,7 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 - `lib/data.ts` fetch + promise cache; `lib/viewport.ts`, `lib/mapCoords.ts`,
   `lib/format.ts`.
 
-## Frontend — Scaffold & layered architecture (uncommitted)
+## Frontend — Scaffold & layered architecture (committed `1eb6b92`)
 - Vite + React 19 + TypeScript 6 + Tailwind v4 (`@tailwindcss/vite`) + Zustand +
   ESLint. Dark, dense, instrument-style dashboard shell.
 - `types/contract.ts` — TS mirror of the frozen JSON contract.

@@ -104,7 +104,11 @@ npm run preview   # serve the production build locally
 - A green build = typecheck clean + bundle produced. Treat TS errors as build
   failures, not warnings.
 - The ETL has no "build" step; it *is* the build for the data half. Its artifacts
-  are checked into `web/public/data/` so the frontend can build without Python.
+  live in `web/public/data/`, which is **`.gitignore`d (not committed)** — the
+  frontend fetches them at runtime, so they must be present locally (run the ETL)
+  and made available to any deploy (commit them or generate them in the build — a
+  P0 #3 / deployment decision). The optimized **minimaps `web/public/minimaps/` are
+  committed**.
 
 ---
 
@@ -126,8 +130,9 @@ npm run preview   # serve the production build locally
 - **Target:** Vercel, static. Project root for the build is `web/`;
   build command `npm run build`; output `web/dist`.
 - **Assets:** `web/public/data/*` and `web/public/minimaps/*` are served as static
-  files under `/data` and `/minimaps`. Ensure they are committed/regenerated before
-  deploy (the frontend fetches them at runtime).
+  files under `/data` and `/minimaps`. Minimaps are committed; **`data/` is
+  `.gitignore`d**, so a deploy must ensure it is present (commit it for the deploy
+  or generate it in the build). The frontend fetches both at runtime.
 - **No env vars, no secrets, no backend.** A push-to-deploy Vercel project is
   sufficient. Not yet configured — this is a remaining milestone.
 
@@ -155,8 +160,10 @@ accurate when ETL logic changes.
 
 1. Read [AI_CONTEXT.md](AI_CONTEXT.md) then [PROJECT_STATE.md](PROJECT_STATE.md).
 2. Install: `cd web && npm install` (frontend); `etl/.venv` already exists for ETL.
-3. **Commit the currently-uncommitted frontend work** (M3–M6) so `main` reflects reality.
-4. Pick the top P0 from [ROADMAP.md](ROADMAP.md) — currently **zoom + pan**.
+3. Generate the gitignored data: `cd etl && .venv/Scripts/python.exe -m src.main`
+   (writes `web/public/data/*`), so the app has something to fetch.
+4. Pick the top P0 from [ROADMAP.md](ROADMAP.md) — currently **deploy** and the
+   aggregate **heatmap** work (frontend M3–M8 are already committed).
 5. Follow the "Adding a feature" path in §3.
 6. On completion, run the documentation continuity step in §7 and commit.
 

@@ -160,22 +160,25 @@ folder** (`config.py::folder_to_date`). Per-match `ts` is rebased to a shared 0.
 
 **~60% overall.** ETL 100% (frozen, committed at `5a9d6bd`). Frontend ~50%:
 scaffold, filters, lazy loading, static visualization, polish, **and zoom/pan** are
-done and build green (verified 2026-07-02) but **uncommitted**. See
+done, **committed** (`1eb6b92`), and build green (verified 2026-07-02). A
+stabilization pass fixed the rejected-promise cache bug (`c6d0090`). See
 [PROJECT_STATE.md](PROJECT_STATE.md).
 
 ## 12. Pending work
 
-Top of queue: **commit the frontend**, then **timeline+playback** (offscreen
-caching — the last core interaction), then tooltip/selection, legend, stats +
-layer-toggle UI, frontend tests, then deploy. Full breakdown in
-[ROADMAP.md](ROADMAP.md).
+Stabilization/delivery phase. Top of queue: **deploy to Vercel**, the aggregate
+**heatmap** + consistent humans/bots filtering, then **timeline+playback**
+(offscreen caching — the last core interaction), viewport performance, then
+tooltip/selection, legend, stats + layer-toggle UI, frontend tests. Full breakdown
+in [ROADMAP.md](ROADMAP.md).
 
 ## 13. Known issues
 
 No timeline playback yet (though `playbackStore` is scaffolded and `duration` is
 wired); layer toggles + stats + legend + tooltip have state/plumbing but **no UI**;
-aggregate points lack `isBot` (no human-only heatmap); no frontend tests; path
-colors not colorblind-safe; frontend work uncommitted. Full list in
+aggregate mode ignores the humans/bots toggles and points lack `isBot` (no
+human-only heatmap); the overview is raw dots, not a true density heatmap; no
+frontend tests; path colors not colorblind-safe. Full list in
 [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## 14. Development philosophy

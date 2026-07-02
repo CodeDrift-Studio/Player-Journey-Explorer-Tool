@@ -26,8 +26,8 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 
 ## Technical debt
 
-- 🔴 **Frontend work (M3–M6) is uncommitted.** Single point of loss; `main` does not
-  reflect reality. → Commit before further work (ROADMAP M7).
+- 🟢 **Frontend work (M3–M8) uncommitted** (resolved) — all frontend + minimaps were
+  committed in `1eb6b92`; `main` now reflects reality (ROADMAP M7 done).
 - 🔴 **No frontend tests.** Pure `lib/*` and `render/` geometry are untested. → Vitest
   (ROADMAP M13).
 - 🔴 **Two pre-existing ESLint errors** (surfaced during P0 #1, not introduced by it):
@@ -40,15 +40,24 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 - 🟡 **Sidebar has placeholder UI** for the statistics panel and layer toggles — not
   yet functional (ROADMAP M12).
 - 🔴 **No top-level `README.md` / `ARCHITECTURE.md`.** The front door for humans is
-  currently `PROJECT_SUMMARY.md` + this folder (ROADMAP M17).
+  currently `PROJECT_SUMMARY.md` + this folder (ROADMAP M17). Note: `web/README.md`
+  is still the default Vite template boilerplate.
+- 🟢 **Git hygiene: stray commit + tracked local settings** (resolved) — a stray
+  commit with a corrupted message (`ix(web):…`) that only committed
+  `.claude/settings.local.json` was removed by rewriting the tip onto `c6d0090`
+  (force-push). `.claude/settings.local.json` is now `.gitignore`d and untracked.
 
 ## Missing UI (state/plumbing exists, no controls)
 
 - 🟡 **Layer toggles have no UI.** `filterStore.layers`
   (`paths/humans/bots/events/heatmap`) + `toggleLayer` exist and `render/scene.ts`
-  honors `paths/humans/bots/events`, but the sidebar only shows a
-  `"Layers · Statistics — next"` placeholder, so layers are stuck at their defaults
-  (all on except `heatmap`). Wire the toggle UI (ROADMAP M12).
+  honors `paths/humans/bots/events` **in match mode only**, but the sidebar only
+  shows a `"Layers · Statistics — next"` placeholder, so layers are stuck at their
+  defaults (all on except `heatmap`). Wire the toggle UI (ROADMAP M12).
+- 🟡 **Aggregate mode ignores the humans/bots toggles.** `drawAggPoints`/`drawAggEvents`
+  in `render/scene.ts` render all points regardless of `layers.humans/bots` (and the
+  aggregate has no `isBot` flag), so the two view modes behave inconsistently
+  (stabilization P0 #5 / ROADMAP M14).
 - 🟡 **`heatmap` layer flag renders nothing.** The flag exists (default off) but no
   heatmap draw path exists; the aggregate is drawn as faint dots (ROADMAP M15).
 - 🟡 **No hover tooltip / marker hit-testing / player selection.** Only a

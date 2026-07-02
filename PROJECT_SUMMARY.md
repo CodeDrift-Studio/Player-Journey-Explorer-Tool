@@ -109,22 +109,29 @@ Modules under `etl/src/` (each single-responsibility, pure logic split from I/O)
 
 - `9118fa6` — scaffold project environment (ETL core + React/TS/Vite/Tailwind).
 - `5a9d6bd` — freeze verified ETL pipeline.
-- Frontend feature work (filters, visualization, polish) is **not yet committed**.
+- `1eb6b92` — project knowledge base **+ all frontend work (M2–M8: scaffold,
+  filters, visualization, polish, zoom/pan) + optimized minimaps**. `main` reflects
+  the full frontend from this commit on.
+- `c6d0090` — stabilization P0 #1: recover from failed data loads (rejected-promise
+  cache fix + Retry).
 
 ---
 
 ## 7. What remains (path to production)
 
+Zoom + pan is **done** (committed `1eb6b92`). Remaining, in stabilization/delivery order:
+
 | Priority | Item |
 |---|---|
-| **P0** | Zoom + pan (needs centralized `useViewport` transform) |
+| **P0** | Deploy to Vercel (production build + verified hosted URL) |
+| **P0** | Aggregate density **heatmap** (Kill/Death/Loot/Traffic) replacing raw dots |
+| **P0** | Consistent humans/bots filtering in aggregate mode |
 | **P0** | Timeline + playback (needs offscreen-canvas caching for 60fps) |
-| P1 | Hover tooltip + selection |
-| P1 | Legend |
+| **P0** | Viewport performance (cache static layers, cut per-frame allocations) |
 | P1 | Statistics panel + layer-toggle UI (sidebar placeholders) |
-| P1 | Frontend tests (Vitest) for pure `lib/*` |
-| P2 | Aggregate `isBot` (human-only heatmap), heatmap layer, colorblind path encoding |
-| — | Deploy to Vercel; write `ARCHITECTURE.md` + top-level `README.md` |
+| P1 | Legend · Hover tooltip + selection · Frontend tests (Vitest) for pure `lib/*` |
+| P2 | Aggregate `isBot` (human-only heatmap), colorblind path encoding, a11y, CI |
+| — | Write `ARCHITECTURE.md` + top-level `README.md` |
 
 ---
 

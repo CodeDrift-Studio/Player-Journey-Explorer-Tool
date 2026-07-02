@@ -11,9 +11,10 @@
 
 - **ETL pipeline: 100%** — complete, verified, frozen, committed.
 - **Frontend: ~50%** — scaffold, data loading, filters, static visualization,
-  polish, **and zoom/pan are done and working** (build verified green
-  2026-07-02). The remaining headline interaction is **timeline playback**;
-  tooltip/legend/stats-UI/tests/deploy are also outstanding.
+  polish, **and zoom/pan are done, committed, and building green** (verified
+  2026-07-02; all committed in `1eb6b92`). A stabilization pass fixed the
+  rejected-promise cache bug (`c6d0090`). The remaining headline interaction is
+  **timeline playback**; tooltip/legend/stats-UI/tests/deploy are also outstanding.
 
 ---
 
@@ -32,23 +33,28 @@
   24 MB → 1.5 MB (1024×1024) into `web/public/minimaps/`.
 - **M3 — Frontend scaffold & layered architecture.** Vite + React 19 + TS 6 +
   Tailwind v4 + Zustand. Layers: `types/`, `lib/`, `store/`, `hooks/`, `render/`,
-  `components/`. (Uncommitted.)
+  `components/`. (Committed `1eb6b92`.)
 - **M4 — Sidebar, filters & lazy data loading.** Segmented Map/Date pickers,
   searchable richness-ranked match list with "All matches" aggregate pinned,
-  lazy per-selection loading. (Uncommitted.)
+  lazy per-selection loading. (Committed `1eb6b92`.)
 - **M5 — Static visualization.** Canvas 2D scene: minimap backdrop, human (blue)
   vs bot (gray) paths, event markers (✕ kill · ✚ death · ◆ loot · ▲ storm),
-  aggregate density dots. (Uncommitted.)
+  aggregate density dots. (Committed `1eb6b92`.)
 - **M6 — Batch-1 production polish.** World-coordinate cursor readout, viewport
   loading/error states, manifest load gate, focus-visible/ARIA, single-point
   player rendering. Fixed StrictMode RAF blank-canvas bug + synchronous initial
-  sizing. (Uncommitted.)
+  sizing. (Committed `1eb6b92`.)
 - **M8 — Zoom + pan.** Wheel-zoom toward the cursor, drag-to-pan, pan/zoom
   clamping (`MIN_ZOOM=1`, `MAX_ZOOM=12`), zoom-% readout, and a Reset button.
   Transform math is centralized in `lib/viewport.ts` (`fitTransform`, `applyView`,
   `clampPan`, `screenToPixel`); `MapViewport.tsx` holds the `{zoom,panX,panY}`
   view state (implemented as local component state, **not** a `useViewport` hook).
-  Verified working via `npm run build`. (Uncommitted.)
+  Verified working via `npm run build`. (Committed `1eb6b92`.)
+- **M7 — Commit frontend to Git.** All frontend work (M3–M6, M8) + optimized
+  minimaps committed in `1eb6b92`; `main` now reflects reality.
+- **Stabilization P0 #1 — Rejected-promise cache fix.** Failed match/aggregate
+  loads no longer poison the cache; a **Retry** button + `dataStore.retry()`
+  recover without a page refresh. Committed `c6d0090`. See CHANGELOG.
 
 ## Remaining milestones
 
@@ -144,15 +150,19 @@ app fetches its own static JSON from `/data` and `/minimaps`).
   committed directly to `main`.
 - Git user: `CodeDrift Studio`.
 - Raw dataset (`../player_data`) is **not** committed and is `.gitignore`d.
-- Generated artifacts under `web/public/data/` are produced by the ETL; treat the
-  ETL source as truth (regenerate rather than hand-edit).
+- Generated artifacts under `web/public/data/` are produced by the ETL and are
+  **`.gitignore`d (not committed)** — regenerate via the ETL, never hand-edit.
+  ⚠️ Because they are untracked, a deploy must either commit them or generate them
+  in the build (a P0 #3 / deployment decision). The minimaps **are** committed.
 
 ## Last verified working commit
 
-- **`5a9d6bd` — "feat(etl): freeze verified ETL pipeline"** is the last committed,
-  fully-verified state (ETL: 26 tests + 10/10 audit pass).
-- **All frontend work (M3–M6) is currently uncommitted** in the working tree.
-  → Immediate action: commit the frontend before continuing (see [WORKFLOW.md](WORKFLOW.md)).
+- **`c6d0090` — "fix(web): recover from failed data loads…"** is the current
+  committed, building-green state: ETL (26 tests + 10/10 audit) + full frontend
+  (M3–M8, `1eb6b92`) + the P0 #1 stabilization fix. `npm run build` green.
+- ETL freeze reference point remains `5a9d6bd` (26 tests + 10/10 audit pass).
+- Git history is linear and clean; `.claude/settings.local.json` (a local settings
+  file) is now `.gitignore`d and no longer tracked.
 
 ## Known limitations
 
@@ -171,12 +181,16 @@ app fetches its own static JSON from `/data` and `/minimaps`).
   humans only.
 - No frontend tests.
 - Path color (blue/gray) is not colorblind-safe.
-- Frontend feature work is uncommitted (single point of loss risk).
+- Aggregate mode ignores the humans/bots layer toggles (match mode honors them).
 
 ## Current priorities
 
-1. **Commit the uncommitted frontend work.**
-2. **Timeline + playback** with offscreen-canvas caching — P0 (the last core interaction).
-3. Tooltip/selection, legend, stats panel + layer-toggle UI — P1.
-4. Frontend unit tests for `lib/*` (viewport math now stable) — P1.
-5. Deploy to Vercel + write top-level `README.md`/`ARCHITECTURE.md`.
+Stabilization/delivery phase (see the P0 backlog). In order:
+
+1. Correct documentation drift — **in progress (this pass).**
+2. Deploy to Vercel (production build + verified hosted URL).
+3. Aggregate density **heatmap** (Kill/Death/Loot/Traffic) replacing raw dots.
+4. Consistent **humans/bots filtering** in aggregate mode.
+5. **Timeline + playback** with offscreen-canvas caching (the last core interaction).
+6. Viewport performance (cache static layers, cut per-frame allocations).
+7. Then P1: stats panel, legend, tooltips, selection, viewport unit tests.

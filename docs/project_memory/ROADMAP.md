@@ -12,28 +12,23 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 
 - **M0 — Environment & data verification.** Done.
 - **M1 — ETL pipeline (frozen, verified, committed `5a9d6bd`).** Done.
-- **M2 — Minimap asset optimization.** Done.
-- **M3 — Frontend scaffold & layered architecture.** Done (uncommitted).
-- **M4 — Sidebar, filters & lazy data loading.** Done (uncommitted).
-- **M5 — Static Canvas visualization.** Done (uncommitted).
-- **M6 — Batch-1 production polish.** Done (uncommitted).
-- **M8 — Zoom + pan.** Done (uncommitted). Wheel-zoom toward the cursor,
+- **M2 — Minimap asset optimization.** Done (committed `1eb6b92`).
+- **M3 — Frontend scaffold & layered architecture.** Done (committed `1eb6b92`).
+- **M4 — Sidebar, filters & lazy data loading.** Done (committed `1eb6b92`).
+- **M5 — Static Canvas visualization.** Done (committed `1eb6b92`).
+- **M6 — Batch-1 production polish.** Done (committed `1eb6b92`).
+- **M7 — Commit outstanding frontend work.** Done — all frontend (M3–M6, M8) +
+  minimaps committed in `1eb6b92`; `git status` clean; `npm run build` green.
+- **M8 — Zoom + pan.** Done (committed `1eb6b92`). Wheel-zoom toward the cursor,
   drag-to-pan, pan/zoom clamping (`MIN_ZOOM=1`, `MAX_ZOOM=12`), zoom-% readout,
   Reset button. Transform math centralized in `lib/viewport.ts`; view state
   (`{zoom,panX,panY}`) lives as local state in `MapViewport.tsx` — implemented
   **without** a dedicated `useViewport` hook (a hook was originally planned but the
   centralized `lib/viewport.ts` math made it unnecessary). Verified via `npm run build`.
+- **Stabilization P0 #1 — Rejected-promise cache fix.** Done (committed `c6d0090`).
+  Cache evicts on failure; Retry button recovers without refresh.
 
 ---
-
-## M7 — Commit outstanding frontend work  ·  Priority: **P0**  ·  Effort: XS (<0.5d)
-
-- **Objective:** Get `main` to reflect the real state; M3–M6 **and M8** are
-  uncommitted and at risk of loss.
-- **Files:** all of `web/src/**` currently untracked/modified; `web/public/minimaps/`.
-- **Dependencies:** none.
-- **Acceptance:** `git status` clean; commits use Conventional-Commit messages;
-  `npm run build` green at HEAD.
 
 ## M9 — Timeline + playback  ·  Priority: **P0**  ·  Effort: L (3–5d)
 
@@ -131,6 +126,7 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 
 ### Suggested sequence
 
-`M7` (commit) → `M9` (timeline+playback — the last core interaction, unblocks the
-demo) → `M10, M11, M12, M13` (P1 polish, parallelizable) → `M14, M15, M16` (P2) →
-`M17` (ship). M8 (zoom+pan) is already done. M11 (legend) can be done anytime.
+M7 (commit) and M8 (zoom+pan) are done. Stabilization/delivery order now leads with
+`M17` (deploy) and the heatmap/aggregate-filter work, then `M9` (timeline+playback —
+the last core interaction) → `M10, M11, M12, M13` (P1 polish, parallelizable) →
+`M14, M15, M16` (P2). M11 (legend) can be done anytime.
