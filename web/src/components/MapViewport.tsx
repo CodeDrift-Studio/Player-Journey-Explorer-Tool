@@ -25,9 +25,11 @@ import {
   screenToPixel,
   type ViewTransform,
 } from '../lib/viewport';
+import { advanceTime, playbackRate } from '../lib/playback';
 import { renderScene } from '../render/scene';
 import { useDataStore } from '../store/dataStore';
 import { useFilterStore } from '../store/filterStore';
+import { usePlaybackStore } from '../store/playbackStore';
 
 const DEFAULT_SIZE = 1024;
 const ZOOM_WHEEL_SENSITIVITY = 0.0015; // per wheel delta unit
@@ -61,7 +63,9 @@ export function MapViewport() {
 
   const mapCfg = mapId && maps ? maps[mapId] : null;
   const size = mapCfg?.size ?? DEFAULT_SIZE;
-  const image = useImage(mapCfg ? `/minimaps/${mapCfg.image}` : null);
+  // BASE_URL carries a trailing slash and reflects Vite's `base`, so minimaps
+  // resolve under a subdirectory deployment (e.g. "/lila/minimaps/...").
+  const image = useImage(mapCfg ? `${import.meta.env.BASE_URL}minimaps/${mapCfg.image}` : null);
 
   // A fresh selection should start fit-to-screen, not inherit the old zoom.
   // React's sanctioned "adjust state when inputs change" pattern (a render-time
@@ -76,7 +80,15 @@ export function MapViewport() {
   // Mirror latest scene inputs so the render loop and event handlers read current
   // values without re-subscribing. Written in a layout effect (never during
   // render) so it's set before any scheduled rAF fires.
-  const sceneRef = useRef({ image, match, aggregate, layers, size, view });
+  const sceneRef = useRef<{
+    image: HTMLImageElement | null;
+    match: typeof match;
+    aggregate: typeof aggregate;
+    layers: typeof layers;
+    size: number;
+    view: View;
+    time: number | null;
+  }>({ image, match, aggregate, layers, size, view, time: null });
 
   /** The full pixel->screen transform for the current size + user view. */
   const currentTransform = useCallback((w: number, h: number): ViewTransform => {
@@ -115,6 +127,7 @@ export function MapViewport() {
       match: s.match,
       aggregate: s.aggregate,
       layers: s.layers,
+      time: s.time,
     });
   }, [currentTransform]);
 
@@ -122,11 +135,73 @@ export function MapViewport() {
     if (!rafRef.current) rafRef.current = requestAnimationFrame(draw);
   }, [draw]);
 
-  // Mirror scene inputs + redraw whenever any of them change.
+  // Mirror scene inputs + redraw whenever any of them change. Playback time comes
+  // from its store (read here so a match/layer change keeps the current playhead).
   useLayoutEffect(() => {
-    sceneRef.current = { image, match, aggregate, layers, size, view };
+    const pb = usePlaybackStore.getState();
+    sceneRef.current = {
+      image,
+      match,
+      aggregate,
+      layers,
+      size,
+      view,
+      time: pb.duration > 0 ? pb.time : null,
+    };
     schedule();
   }, [image, match, aggregate, layers, size, view, schedule]);
+
+  // Playback -> canvas, driven imperatively so advancing `time` ~60×/s never
+  // re-renders this component (or the filters). Covers both scrubbing (paused) and
+  // the play loop: any playback change mirrors the new time and schedules a redraw.
+  useEffect(() => {
+    const apply = (s: { time: number; duration: number }) => {
+      sceneRef.current.time = s.duration > 0 ? s.time : null;
+      schedule();
+    };
+    apply(usePlaybackStore.getState());
+    return usePlaybackStore.subscribe(apply);
+  }, [schedule]);
+
+  // The play loop: while playing, advance the playhead by real elapsed wall-clock
+  // time (scaled per lib/playback) using rAF timestamps, and auto-pause at the end
+  // leaving the playhead parked there. Runs entirely off React state.
+  useEffect(() => {
+    let raf = 0;
+    let last = 0;
+    const tick = (ts: number) => {
+      const pb = usePlaybackStore.getState();
+      if (!pb.isPlaying) {
+        raf = 0;
+        last = 0;
+        return;
+      }
+      if (last === 0) last = ts;
+      const dt = ts - last;
+      last = ts;
+      const rate = playbackRate(pb.duration, pb.speed);
+      const { time, ended } = advanceTime(pb.time, dt, rate, pb.duration);
+      pb.setTime(time);
+      if (ended) {
+        pb.pause(); // auto-pause at end; no rewind
+        raf = 0;
+        last = 0;
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    const unsub = usePlaybackStore.subscribe((s, prev) => {
+      if (s.isPlaying && !prev.isPlaying && !raf) {
+        last = 0;
+        raf = requestAnimationFrame(tick);
+      }
+    });
+    if (usePlaybackStore.getState().isPlaying && !raf) raf = requestAnimationFrame(tick);
+    return () => {
+      unsub();
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, []);
 
   // Resize handling (created once).
   useEffect(() => {

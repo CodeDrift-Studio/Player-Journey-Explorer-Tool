@@ -1,11 +1,12 @@
 /**
  * Dashboard shell — the tool layout: header (identity + active view) · sidebar
- * (filters) · main viewport · footer (timeline). Timeline is a placeholder for
- * its own milestone; filters and the viewport are live.
+ * (filters) · main viewport · footer (timeline). Filters, viewport, and timeline
+ * playback are all live.
  */
 
 import { MapViewport } from './components/MapViewport';
 import { Sidebar } from './components/Sidebar';
+import { Timeline } from './components/Timeline';
 import { useManifestLoader } from './hooks/useManifest';
 import { useSelectedData } from './hooks/useSelectedData';
 import { shortDate } from './lib/format';
@@ -86,9 +87,7 @@ function App() {
         )}
       </div>
 
-      <footer className="flex h-12 shrink-0 items-center border-t border-slate-800 bg-slate-900/40 px-3 text-xs text-slate-600">
-        Timeline — playback milestone
-      </footer>
+      <Timeline />
     </div>
   );
 }

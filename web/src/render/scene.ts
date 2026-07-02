@@ -9,6 +9,7 @@
  * context + params and draws — trivially reasoned about, easy to extend.
  */
 
+import { pathHead } from '../lib/playback';
 import { pixelToScreen, type ViewTransform } from '../lib/viewport';
 import type { LayerKey } from '../store/filterStore';
 import type { Aggregate, EventCategory, Match } from '../types/contract';
@@ -16,6 +17,7 @@ import { COLORS } from './palette';
 
 const GRID_DIVISIONS = 8;
 const MARKER_R = 4; // event marker radius, in screen px (constant size)
+const HEAD_R = 2.75; // playback "current position" dot radius, screen px
 
 type Ctx = CanvasRenderingContext2D;
 type Layers = Record<LayerKey, boolean>;
@@ -30,10 +32,17 @@ export interface SceneArgs {
   match: Match | null;
   aggregate: Aggregate | null;
   layers: Layers;
+  /**
+   * Playback position in telemetry ms. When a number, paths reveal progressively
+   * up to `time` (with an interpolated head) and only events with `t <= time`
+   * draw. When null (aggregate view, or playback not applicable) the whole match
+   * draws — behavior identical to before playback existed.
+   */
+  time: number | null;
 }
 
 export function renderScene(a: SceneArgs): void {
-  const { ctx, width, height, size, transform, image, match, aggregate, layers } = a;
+  const { ctx, width, height, size, transform, image, match, aggregate, layers, time } = a;
 
   ctx.fillStyle = '#0a0e17';
   ctx.fillRect(0, 0, width, height);
@@ -43,8 +52,8 @@ export function renderScene(a: SceneArgs): void {
   drawFrame(ctx, size, transform);
 
   if (match) {
-    if (layers.paths) drawPaths(ctx, match, transform, layers);
-    if (layers.events) drawMatchEvents(ctx, match, transform, layers);
+    if (layers.paths) drawPaths(ctx, match, transform, layers, time);
+    if (layers.events) drawMatchEvents(ctx, match, transform, layers, time);
   } else if (aggregate) {
     if (layers.paths) drawAggPoints(ctx, aggregate, transform);
     if (layers.events) drawAggEvents(ctx, aggregate, transform);
@@ -83,7 +92,13 @@ function drawGrid(ctx: Ctx, size: number, t: ViewTransform): void {
   ctx.stroke();
 }
 
-function drawPaths(ctx: Ctx, match: Match, t: ViewTransform, layers: Layers): void {
+function drawPaths(
+  ctx: Ctx,
+  match: Match,
+  t: ViewTransform,
+  layers: Layers,
+  time: number | null,
+): void {
   for (const p of match.players) {
     if (p.isBot && !layers.bots) continue;
     if (!p.isBot && !layers.humans) continue;
@@ -95,32 +110,64 @@ function drawPaths(ctx: Ctx, match: Match, t: ViewTransform, layers: Layers): vo
     ctx.globalAlpha = p.isBot ? 0.5 : 0.9;
     ctx.lineWidth = p.isBot ? 1 : 1.5;
 
-    // A single-sample player has no line to draw — show a dot so they're visible.
-    if (p.path.length === 1) {
-      const [sx, sy] = pixelToScreen(p.path[0][1], p.path[0][2], t);
+    // Static (whole-match) rendering — playback disabled / aggregate.
+    if (time === null) {
+      if (p.path.length === 1) {
+        const [sx, sy] = pixelToScreen(p.path[0][1], p.path[0][2], t);
+        ctx.beginPath();
+        ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        continue;
+      }
       ctx.beginPath();
-      ctx.arc(sx, sy, 1.5, 0, Math.PI * 2);
-      ctx.fill();
+      const [sx0, sy0] = pixelToScreen(p.path[0][1], p.path[0][2], t);
+      ctx.moveTo(sx0, sy0);
+      for (let i = 1; i < p.path.length; i++) {
+        const [sx, sy] = pixelToScreen(p.path[i][1], p.path[i][2], t);
+        ctx.lineTo(sx, sy);
+      }
+      ctx.stroke();
       continue;
     }
+
+    // Progressive playback: reveal [0..head.index] plus a partial segment to the
+    // interpolated head position, and mark the head with a dot.
+    const head = pathHead(p.path, time);
+    if (!head) continue; // player hasn't appeared yet at this time
 
     ctx.beginPath();
     const [sx0, sy0] = pixelToScreen(p.path[0][1], p.path[0][2], t);
     ctx.moveTo(sx0, sy0);
-    for (let i = 1; i < p.path.length; i++) {
+    for (let i = 1; i <= head.index; i++) {
       const [sx, sy] = pixelToScreen(p.path[i][1], p.path[i][2], t);
       ctx.lineTo(sx, sy);
     }
+    const [hx, hy] = pixelToScreen(head.px, head.py, t);
+    ctx.lineTo(hx, hy);
     ctx.stroke();
+
+    // Head dot sits exactly on the interpolated position.
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(hx, hy, HEAD_R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.globalAlpha = p.isBot ? 0.5 : 0.9;
   }
   ctx.globalAlpha = 1;
 }
 
-function drawMatchEvents(ctx: Ctx, match: Match, t: ViewTransform, layers: Layers): void {
+function drawMatchEvents(
+  ctx: Ctx,
+  match: Match,
+  t: ViewTransform,
+  layers: Layers,
+  time: number | null,
+): void {
   for (const p of match.players) {
     if (p.isBot && !layers.bots) continue;
     if (!p.isBot && !layers.humans) continue;
     for (const e of p.events) {
+      if (time !== null && e.t > time) continue; // not yet occurred at this time
       const [sx, sy] = pixelToScreen(e.px, e.py, t);
       drawMarker(ctx, e.cat, sx, sy);
     }
