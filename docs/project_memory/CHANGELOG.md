@@ -11,6 +11,25 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 
 ## [Unreleased]
 
+### Fixed
+- **Rejected-promise cache bug** (2026-07-02, stabilization P0 #1) — `lib/data.ts`
+  cached the fetch *promise* unconditionally, so a single failed `loadMatch`/
+  `loadAggregate` poisoned the cache: every later attempt replayed the same
+  rejection and the view could only recover via a full page reload. Now failures
+  are **evicted** from the cache (`.catch` deletes the key and re-throws), and a
+  `dataStore.retry()` (bumping `reloadNonce`, consumed by `useSelectedData`) drives
+  a **Retry** button in the viewport error overlay — failed requests recover with
+  no refresh. Concurrent in-flight de-dupe is preserved.
+  - **Verification (no frontend test runner yet — manual note):** `npm run build`
+    green (0 TS errors) and `npm run lint` clean for the changed files. The real
+    compiled `data.ts` was driven through a `fetch` mock (fail-once-then-succeed)
+    with 8 passing assertions: (1) failed load rejects; (2) retry after failure
+    succeeds and actually re-fetches; (3) repeated success returns the identical
+    cached promise with zero new network calls; (3c) concurrent calls de-dupe to
+    one fetch; (4) aggregate shares the same eviction fix; (5) manifest path
+    unchanged. Re-runnable via the harness in stabilization notes. A permanent
+    Vitest suite lands with ROADMAP M13 (P1) rather than adding a runner here.
+
 ### Added
 - **`docs/project_memory/` knowledge base** (2026-07-02) — permanent, self-contained
   project memory so development can continue with any AI/human without prior chat

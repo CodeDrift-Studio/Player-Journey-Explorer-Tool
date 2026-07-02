@@ -18,6 +18,8 @@ export function useSelectedData(): void {
   const mapId = useFilterStore((s) => s.mapId);
   const date = useFilterStore((s) => s.date);
   const matchId = useFilterStore((s) => s.matchId);
+  // Bumped by dataStore.retry() — re-runs the load with the same selection.
+  const reloadNonce = useDataStore((s) => s.reloadNonce);
 
   useEffect(() => {
     let cancelled = false;
@@ -59,5 +61,5 @@ export function useSelectedData(): void {
     return () => {
       cancelled = true;
     };
-  }, [mapId, date, matchId]);
+  }, [mapId, date, matchId, reloadNonce]);
 }

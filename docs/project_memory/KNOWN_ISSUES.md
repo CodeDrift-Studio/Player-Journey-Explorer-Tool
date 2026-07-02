@@ -13,6 +13,11 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 - 🔴 **None currently known in shipped code.** The two ETL reconstruction bugs
   (day-boundary double-count; player split across files) were fixed before the ETL
   freeze — see CHANGELOG `[5a9d6bd]`.
+- 🟢 **Rejected-promise cache poisoned recovery** (fixed, stabilization P0 #1) —
+  `lib/data.ts` cached fetch promises unconditionally, so one failed match/aggregate
+  load could never recover without a page refresh. Failures are now evicted from the
+  cache and a **Retry** button (`dataStore.retry()` → `reloadNonce`) re-runs the load.
+  **Watch-out:** any new cached-promise loader must evict on rejection the same way.
 - 🟢 **Blank canvas under React StrictMode** (fixed) — stale `requestAnimationFrame`
   id on remount; RAF ref now reset in cleanup. Kept here as a **watch-out**: any new
   RAF/effect in `MapViewport.tsx` must clean up so a StrictMode remount reschedules.
@@ -25,6 +30,11 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   reflect reality. → Commit before further work (ROADMAP M7).
 - 🔴 **No frontend tests.** Pure `lib/*` and `render/` geometry are untested. → Vitest
   (ROADMAP M13).
+- 🔴 **Two pre-existing ESLint errors** (surfaced during P0 #1, not introduced by it):
+  `components/ui.tsx:15` (`react-refresh/only-export-components` — mixes a helper with
+  component exports) and `hooks/useImage.ts:14` (`react-hooks/set-state-in-effect` —
+  synchronous `setState` in an effect). `npm run build` is green; only `npm run lint`
+  flags these. Fix in their own change; do not bundle.
 - 🔴 **Contract kept in sync by hand** across `serialize.py` ↔ `contract.ts`. Relies
   on discipline; drift is possible. Consider schema-driven codegen if it ever bites (D9).
 - 🟡 **Sidebar has placeholder UI** for the statistics panel and layer toggles — not

@@ -5,6 +5,9 @@
  * match/aggregate is fetched we keep it — re-selecting is instant with zero
  * refetch. We cache the *promise* (not the result) so concurrent requests for
  * the same file dedupe to a single network hit.
+ *
+ * A rejected request is EVICTED from the cache (never cached permanently), so a
+ * later retry re-fetches instead of replaying the same failure forever.
  */
 
 import type { Aggregate, Manifest, Match } from '../types/contract';
@@ -31,7 +34,12 @@ export function loadManifest(): Promise<Manifest> {
 export function loadMatch(matchId: string): Promise<Match> {
   let promise = matchCache.get(matchId);
   if (!promise) {
-    promise = fetchJson<Match>(`${BASE}/matches/${matchId}.json`);
+    // Evict on failure: a rejected request must not poison the cache, or every
+    // future retry would replay the same rejection.
+    promise = fetchJson<Match>(`${BASE}/matches/${matchId}.json`).catch((err) => {
+      matchCache.delete(matchId);
+      throw err;
+    });
     matchCache.set(matchId, promise);
   }
   return promise;
@@ -42,7 +50,11 @@ export function loadAggregate(mapId: string, date: string): Promise<Aggregate> {
   const key = `${mapId}_${date}`;
   let promise = aggregateCache.get(key);
   if (!promise) {
-    promise = fetchJson<Aggregate>(`${BASE}/aggregate/${key}.json`);
+    // Evict on failure (see loadMatch): keep the cache free of rejected promises.
+    promise = fetchJson<Aggregate>(`${BASE}/aggregate/${key}.json`).catch((err) => {
+      aggregateCache.delete(key);
+      throw err;
+    });
     aggregateCache.set(key, promise);
   }
   return promise;

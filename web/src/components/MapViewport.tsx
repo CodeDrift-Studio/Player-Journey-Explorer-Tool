@@ -57,6 +57,7 @@ export function MapViewport() {
   const aggregate = useDataStore((s) => s.aggregate);
   const viewStatus = useDataStore((s) => s.viewStatus);
   const error = useDataStore((s) => s.error);
+  const retry = useDataStore((s) => s.retry);
 
   const mapCfg = mapId && maps ? maps[mapId] : null;
   const size = mapCfg?.size ?? DEFAULT_SIZE;
@@ -274,8 +275,14 @@ export function MapViewport() {
         </div>
       )}
       {failed && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-4 text-center text-xs text-red-400">
-          Failed to load view{error ? `: ${error}` : ''}
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center">
+          <span className="text-xs text-red-400">Failed to load view{error ? `: ${error}` : ''}</span>
+          <button
+            onClick={retry}
+            className="rounded border border-slate-700 bg-slate-900/80 px-3 py-1 text-xs text-slate-200 transition-colors hover:border-slate-500 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
+          >
+            Retry
+          </button>
         </div>
       )}
 
