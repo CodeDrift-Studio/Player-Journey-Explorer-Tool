@@ -13,9 +13,8 @@ web/dist/
 data/
 *.nakama-0
 
-# ── Generated ETL artifacts (rebuilt from raw data) ──
-web/public/data/matches/
-web/public/data/manifest.json
+# ── Generated ETL artifacts (regenerate via `python -m src.main`; deploy decision deferred) ──
+web/public/data/
 
 # ── OS / editor cruft ─────────────────────────
 .DS_Store
