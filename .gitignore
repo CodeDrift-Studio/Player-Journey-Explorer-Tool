@@ -10,11 +10,14 @@ web/dist/
 *.local
 
 # ── Raw gameplay data (large, provided separately, never committed) ──
-data/
+# Anchored to repo root so it does NOT match web/public/data (committed assets).
+/data/
 *.nakama-0
 
-# ── Generated ETL artifacts (regenerate via `python -m src.main`; deploy decision deferred) ──
-web/public/data/
+# ── Generated ETL artifacts ──
+# COMMITTED intentionally: the dataset is frozen (5 fixed days) and the app is a
+# static site with no backend, so the ETL JSON ships as static assets for Vercel.
+# Regenerate via `python -m src.main` if the raw data ever changes; do not hand-edit.
 
 # ── OS / editor cruft ─────────────────────────
 .DS_Store

@@ -1,0 +1,1 @@
+{"matchId":"f23d2181-4ad5-4ca7-9446-2113c1bc2b2d","mapId":"Lockdown","date":"2026-02-12","startTs":0,"endTs":35,"players":[{"userId":"b69ca9d6-d27d-4a61-b6d8-6e747cee8f79","isBot":false,"path":[[0,384.1,425.3],[25,391.7,423.4],[30,414.4,427.9],[35,417.3,426.9]],"events":[{"t":33,"cat":"death","raw":"BotKilled","px":417.3,"py":426.9}]}]}
