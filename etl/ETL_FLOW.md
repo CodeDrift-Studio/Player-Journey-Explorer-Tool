@@ -2,7 +2,7 @@
 
 This document tracks the offline ETL pipeline: what each module does, its inputs
 and outputs, the data transformations it performs, why each is necessary, and the
-assumptions it makes. It evolves as modules are added and feeds `ARCHITECTURE.md`.
+assumptions it makes.
 
 ## Pipeline overview
 
@@ -14,7 +14,7 @@ PlayerFile[]
    │  matches.py       group + rebase + project + split  →  Match[]
    ▼
 Match[]  (domain model)
-   │  serialize.py     shape into JSON  →  manifest.json, matches/*.json, aggregate/*.json   [PENDING]
+   │  serialize.py     shape into JSON  →  manifest.json, matches/*.json, aggregate/*.json
    ▼
 web/public/data/
 ```

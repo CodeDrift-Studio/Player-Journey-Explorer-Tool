@@ -3,7 +3,7 @@
 > **Read this first.** This file lets any AI assistant (or human) that has *never
 > seen the original conversation* resume work immediately. It is deliberately
 > self-contained. If anything here conflicts with a tool's private memory, **this
-> file is authoritative.** Last updated: **2026-07-02**.
+> file is authoritative.** Last updated: **2026-07-03**.
 
 ---
 
@@ -50,10 +50,12 @@ player-journey-tool/                 ← git repo root
 │   ├── src/
 │   │   ├── types/contract.ts        ← TS mirror of the JSON contract
 │   │   ├── lib/     data.ts viewport.ts mapCoords.ts format.ts
+│   │   │             playback.ts heatmap.ts stats.ts hitTest.ts  (+ *.test.ts)
 │   │   ├── store/   filterStore.ts playbackStore.ts dataStore.ts   (Zustand)
 │   │   ├── hooks/   useManifest.ts useSelectedData.ts useImage.ts
 │   │   ├── render/  palette.ts scene.ts                            (pure canvas draw)
-│   │   ├── components/  App Sidebar MapViewport ui filters/
+│   │   ├── components/  App Sidebar MapViewport Timeline Legend
+│   │   │             StatsPanel HeatmapControl ui filters/
 │   │   ├── App.tsx main.tsx index.css
 │   ├── package.json  vite.config.ts  tsconfig.*.json  eslint.config.js
 ├── PROJECT_SUMMARY.md               ← narrative build log (historical)
@@ -86,7 +88,7 @@ never re-renders the filter UI:
 
 - **`filterStore`** — current map, date, selected match (or "All matches"
   aggregate), and layer toggles.
-- **`playbackStore`** — playback time cursor and speed (drives the future timeline).
+- **`playbackStore`** — playback time cursor and speed (drives the timeline).
 - **`dataStore`** — loaded manifest, current match, current aggregate, and load status.
 
 Data loads **lazily on selection** via hooks (`useManifest.ts` exports
@@ -152,35 +154,38 @@ folder** (`config.py::folder_to_date`). Per-match `ts` is rebased to a shared 0.
 
 - **60 fps playback** with thousands of path points and event markers. This is why
   we chose Canvas over SVG/DOM and Zustand selective subscriptions over context.
-- Playback will need **offscreen-canvas caching** of static layers (minimap/grid/full
-  paths) so each frame only redraws the moving cursor/reveal — see ROADMAP P0.
+- Offscreen-canvas caching of static layers was considered but **measured
+  unnecessary** — profiling the heaviest match put `renderScene` at ~0.07 ms avg
+  (≈33× under the 16.7 ms 60 fps budget), so full per-frame redraws are cheap enough.
+  Revisit only if a future dense overlay tightens the budget.
 - Keep JSON small: compact `[ts,px,py]` tuples, coords rounded to 1 decimal.
 
 ## 11. Current implementation status
 
-**~60% overall.** ETL 100% (frozen, committed at `5a9d6bd`). Frontend ~50%:
-scaffold, filters, lazy loading, static visualization, polish, **and zoom/pan** are
-done, **committed** (`1eb6b92`), and build green (verified 2026-07-02). A
-stabilization pass fixed the rejected-promise cache bug (`c6d0090`). See
-[PROJECT_STATE.md](PROJECT_STATE.md).
+**Core assignment complete and deployed.** ETL 100% (frozen, committed at `5a9d6bd`).
+Frontend: scaffold, filters, lazy loading, per-match visualization, polish, zoom/pan,
+**timeline playback** (`b647707`), **aggregate density heatmap** (`fda6e65`),
+**statistics panel** (`8d00eb9`), **legend** (`fcf176a`), and **event-marker hover
+tooltips** (`fe036f2`) are all done and building green. A stabilization pass fixed the
+rejected-promise cache bug (`c6d0090`); deployment is live on Hostinger at `/lila/`.
+See [PROJECT_STATE.md](PROJECT_STATE.md).
 
-## 12. Pending work
+## 12. Remaining (optional polish)
 
-Stabilization/delivery phase. Deployment is **done** (live on Hostinger at `/lila/`).
-Top of queue: **timeline+playback** (offscreen caching — the last core interaction),
-then the aggregate **heatmap** + consistent humans/bots filtering, viewport
-performance, then tooltip/selection, legend, stats + layer-toggle UI, frontend tests.
-Full breakdown
-in [ROADMAP.md](ROADMAP.md).
+The core tool is delivered. Optional P1/P2 items remain: the **layer-toggle UI**
+(state + scene support already exist), **player click-to-select + dimming**, an
+aggregate `isBot` flag for a **human-only heatmap** (contract change), **colorblind-safe
+path encoding**, and **broader Vitest coverage** (playback/heatmap/hitTest/stats are
+covered; `viewport`/`mapCoords`/`format` are not). Full breakdown in
+[ROADMAP.md](ROADMAP.md).
 
 ## 13. Known issues
 
-No timeline playback yet (though `playbackStore` is scaffolded and `duration` is
-wired); layer toggles + stats + legend + tooltip have state/plumbing but **no UI**;
+No open bugs in shipped code. Layer toggles have state/plumbing but **no UI**;
 aggregate mode ignores the humans/bots toggles and points lack `isBot` (no
-human-only heatmap); the overview is raw dots, not a true density heatmap; no
-frontend tests; path colors not colorblind-safe. Full list in
-[KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+human-only heatmap yet); path colors are not colorblind-safe; two pre-existing
+ESLint errors remain in `ui.tsx`/`useImage.ts` (`npm run build` is green; only
+`npm run lint` flags them). Full list in [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 ## 14. Development philosophy
 

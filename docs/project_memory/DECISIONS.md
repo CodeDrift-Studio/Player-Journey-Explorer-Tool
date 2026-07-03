@@ -2,7 +2,7 @@
 
 > Engineering decision records (ADRs). One entry per significant decision. Add a new
 > entry (don't rewrite old ones) when a decision is made; if a decision is reversed,
-> add a new entry that supersedes the old and note it. Last updated: **2026-07-02**.
+> add a new entry that supersedes the old and note it. Last updated: **2026-07-03**.
 
 Each record: **Problem · Alternatives considered · Decision · Reason · Trade-offs ·
 Future implications.**

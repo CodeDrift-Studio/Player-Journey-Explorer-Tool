@@ -37,4 +37,4 @@ This keeps the repository always reflecting the true current state. See the
 - [../../etl/ETL_VERIFICATION.md](../../etl/ETL_VERIFICATION.md) — dataset stats, reconciliation, the 10-point audit.
 - [../../PROJECT_SUMMARY.md](../../PROJECT_SUMMARY.md) — narrative build log (historical; this folder supersedes it as the living record).
 
-_Last updated: 2026-07-02._
+_Last updated: 2026-07-03._

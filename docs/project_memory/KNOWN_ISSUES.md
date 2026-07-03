@@ -2,7 +2,7 @@
 
 > Open bugs, technical debt, performance opportunities, potential refactors, and
 > future enhancements. Remove items when resolved (note the fix in CHANGELOG.md);
-> add items as they're discovered. Last updated: **2026-07-02**.
+> add items as they're discovered. Last updated: **2026-07-03**.
 
 Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly for history).
 
@@ -44,7 +44,8 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   is not built yet (plumbing + scene support exist).
 - 🟡 **Top-level `README.md` exists; `ARCHITECTURE.md` still absent.** The front door
   for humans is now `README.md` + this folder (ROADMAP M17 done). `ARCHITECTURE.md`
-  remains optional. Note: `web/README.md` is still the default Vite template boilerplate.
+  remains optional (this KB serves that role). `web/README.md` is now a real
+  frontend README (was the default Vite template).
 - 🟢 **Git hygiene: stray commit + tracked local settings** (resolved) — a stray
   commit with a corrupted message (`ix(web):…`) that only committed
   `.claude/settings.local.json` was removed by rewriting the tip onto `c6d0090`

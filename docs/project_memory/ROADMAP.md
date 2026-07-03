@@ -1,7 +1,7 @@
 # ROADMAP.md
 
 > Remaining work as milestones. Update when a milestone completes (mark it done,
-> re-prioritize). Effort is rough dev-time. Last updated: **2026-07-02**.
+> re-prioritize). Effort is rough dev-time. Last updated: **2026-07-03**.
 
 Priority key: **P0** = core, blocks a usable tool · **P1** = important polish ·
 **P2** = nice-to-have / stretch · **Ship** = release tasks.

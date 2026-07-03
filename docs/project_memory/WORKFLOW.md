@@ -1,7 +1,7 @@
 # WORKFLOW.md
 
 > The complete development workflow for this project. If you are new (human or AI),
-> read [AI_CONTEXT.md](AI_CONTEXT.md) first, then this. Last updated: **2026-07-02**.
+> read [AI_CONTEXT.md](AI_CONTEXT.md) first, then this. Last updated: **2026-07-03**.
 
 ---
 
@@ -115,9 +115,9 @@ npm run preview   # serve the production build locally
 
 - **ETL:** `pytest` (26 tests) + `audit.py` (10-point adversarial audit). This is
   the trusted layer — keep it green before touching data logic.
-- **Frontend:** **no tests yet.** Planned: Vitest for pure `lib/*` (`viewport`,
-  `mapCoords`, `format`) and `render/` geometry. Add Vitest as the first testing
-  milestone (see [ROADMAP.md](ROADMAP.md)).
+- **Frontend:** **Vitest — 38 tests** covering the pure `lib/*` logic (`playback`,
+  `heatmap`, `hitTest`, `stats`) via `npm run test`. Not yet covered: `viewport`,
+  `mapCoords`, `format` (see [ROADMAP.md](ROADMAP.md) M13).
 - **Manual verification:** for visual/interaction work, run `npm run dev`, drive
   the actual flow (select a map/date/match, exercise zoom/playback), and confirm
   behavior — don't rely on typecheck alone.
@@ -173,9 +173,9 @@ accurate when ETL logic changes.
 2. Install: `cd web && npm install` (frontend); `etl/.venv` already exists for ETL.
 3. Generate the gitignored data: `cd etl && .venv/Scripts/python.exe -m src.main`
    (writes `web/public/data/*`), so the app has something to fetch.
-4. Pick the top P0 from [ROADMAP.md](ROADMAP.md) — deployment is **done** (live on
-   Hostinger at `/lila/`); the next active P0 is **M9 — timeline + playback**
-   (frontend M3–M8 are already committed).
+4. The core assignment is **done** (ETL, full frontend, playback, heatmap, stats,
+   legend, tooltips, and deploy). Pick from the remaining **optional P1/P2 polish**
+   in [ROADMAP.md](ROADMAP.md) — e.g. the layer-toggle UI or broader Vitest coverage.
 5. Follow the "Adding a feature" path in §3.
 6. On completion, run the documentation continuity step in §7 and commit.
 

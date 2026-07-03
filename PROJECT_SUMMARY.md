@@ -17,7 +17,7 @@ Games. This document records everything built so far, in order.
 | Styling | **Tailwind CSS v4** | Fast, dense, consistent instrument-style UI. |
 | Event taxonomy | **Unified**: kill = Kill+BotKill · death = Killed+BotKilled · loot · storm | Human-vs-human combat is ~0; folding bot combat keeps markers meaningful. |
 | Viewing scope | **Single match (playback) + map/date aggregate (overview)** | 743/796 matches are single-journey; aggregate is where heatmap value is. |
-| Deploy target | **Static → Vercel** (Phase 7, not yet done) | One artifact, no server. |
+| Deploy target | **Static → Hostinger**, served under `/lila/` | One artifact, no server; hosted on existing infrastructure. |
 
 **Repo layout:** `etl/` (Python pipeline) + `web/` (React app), separate toolchains.
 
@@ -80,7 +80,7 @@ Modules under `etl/src/` (each single-responsibility, pure logic split from I/O)
 
 ---
 
-## 5. Phase 2 — Frontend (in progress)
+## 5. Phase 2 — Frontend (complete)
 
 ### Scaffold & toolchain
 - Vite + React 19 + TS 6; Tailwind v4 via `@tailwindcss/vite`; Zustand; ESLint.
@@ -98,6 +98,13 @@ Modules under `etl/src/` (each single-responsibility, pure logic split from I/O)
 1. **Sidebar + Filters + data loading** — segmented Map/Date pickers, searchable richness-ranked Match list ("All matches" aggregate pinned on top), lazy per-selection loading.
 2. **Visualization** — minimap backdrop; **human (blue) vs bot (gray) paths**; event markers (**✕ kill · ✚ death · ◆ loot · ▲ storm**); aggregate density dots.
 3. **Batch-1 production polish** (from the design review) — world-coordinate cursor readout; viewport loading/error states; manifest load gate; `size` from map config; focus-visible rings + ARIA; single-point-player dot.
+4. **Zoom + pan** — wheel-zoom toward the cursor, drag-to-pan, clamped, zoom-% readout + Reset; transform math centralized in `lib/viewport.ts`.
+5. **Timeline playback** — play/pause/scrub/0.5–4× speed, progressive path reveal with head-dot interpolation, event reveal; pure logic in `lib/playback.ts`, imperative rAF loop keeps the map/filters from re-rendering during playback.
+6. **Aggregate density heatmap** — binned + blurred Traffic/Kill/Death/Loot density fields (`lib/heatmap.ts` + `render/scene.ts` offscreen blit) with a sidebar mode selector, replacing raw dots.
+7. **Statistics panel** — per-selection counts, human/bot split, duration, and event breakdown (`lib/stats.ts` + `StatsPanel.tsx`).
+8. **Legend + hover tooltips** — a context-aware viewport legend, and marker hover showing raw name/category/time/owner (`lib/hitTest.ts`).
+
+Pure logic is covered by **38 Vitest tests** (playback, heatmap, hit-testing, stats).
 
 ### Frontend bugs found & fixed
 - **Blank canvas** from a **stale `requestAnimationFrame` id under React StrictMode** — reset the ref in cleanup so a remount can reschedule.
@@ -114,24 +121,28 @@ Modules under `etl/src/` (each single-responsibility, pure logic split from I/O)
   the full frontend from this commit on.
 - `c6d0090` — stabilization P0 #1: recover from failed data loads (rejected-promise
   cache fix + Retry).
+- `828e496` / `b53c41e` — commit frozen ETL JSON as static assets + top-level README
+  / production deploy readiness.
+- `a43d269` — subdirectory deploy (`base: '/lila/'`, `import.meta.env.BASE_URL`) — live on Hostinger.
+- `b647707` — timeline controls + progressive playback rendering.
+- `fda6e65` — aggregate density heatmap (Traffic/Kill/Death/Loot).
+- `8d00eb9` — per-selection statistics panel.
+- `fcf176a` — context-aware viewport legend.
+- `fe036f2` — event-marker hover tooltips.
 
 ---
 
-## 7. What remains (path to production)
+## 7. What remains (optional polish)
 
-Zoom + pan is **done** (committed `1eb6b92`). Remaining, in stabilization/delivery order:
+The core assignment is delivered and deployed (live on Hostinger at
+`https://anantagupta.com/lila/`). Optional, non-blocking items:
 
 | Priority | Item |
 |---|---|
-| **P0** | Deploy to Vercel (production build + verified hosted URL) |
-| **P0** | Aggregate density **heatmap** (Kill/Death/Loot/Traffic) replacing raw dots |
-| **P0** | Consistent humans/bots filtering in aggregate mode |
-| **P0** | Timeline + playback (needs offscreen-canvas caching for 60fps) |
-| **P0** | Viewport performance (cache static layers, cut per-frame allocations) |
-| P1 | Statistics panel + layer-toggle UI (sidebar placeholders) |
-| P1 | Legend · Hover tooltip + selection · Frontend tests (Vitest) for pure `lib/*` |
-| P2 | Aggregate `isBot` (human-only heatmap), colorblind path encoding, a11y, CI |
-| — | Write `ARCHITECTURE.md` + top-level `README.md` |
+| P1 | Layer-toggle UI (state + scene support already exist) |
+| P1 | Player click-to-select + dimming; path hover |
+| P1 | Broader Vitest coverage (`viewport`, `mapCoords`, `format`) |
+| P2 | Aggregate `isBot` (human-only heatmap) · colorblind-safe path encoding |
 
 ---
 

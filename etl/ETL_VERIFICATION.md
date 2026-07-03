@@ -8,7 +8,7 @@ frontend" checkpoint.
 
 ```bash
 cd etl
-.venv/Scripts/python.exe -m pytest -q      # 25 unit tests
+.venv/Scripts/python.exe -m pytest -q      # 26 unit tests
 .venv/Scripts/python.exe -m src.main       # full pipeline over all raw files
 ```
 
@@ -95,7 +95,7 @@ row still present exactly once).
 - a sampled per-match file exists and is well-formed;
 - at least one aggregate file was written.
 
-**Unit tests** (25, `pytest`): coordinate conversion (incl. README worked
+**Unit tests** (26, `pytest`): coordinate conversion (incl. README worked
 example), event taxonomy, bot detection, reader decoding & error handling,
 match rebasing/splitting/projection, and JSON shaping + round-trip.
 

@@ -17,6 +17,14 @@ Built as a take-home for a **Product Engineer** role at LILA Games.
   richness (players, then events) so the interesting matches surface first.
 - **Canvas visualization** over the real minimap: human (blue) vs bot (gray) paths,
   and event markers — ✕ kill · ✚ death · ◆ loot · ▲ storm.
+- **Timeline playback** (single match) — play / pause / scrub / 0.5–4× speed, with
+  paths revealing progressively over time and markers firing at their moment.
+- **Aggregate density heatmap** (overview) — binned + blurred **Traffic / Kill /
+  Death / Loot** density fields over the minimap, switchable from the sidebar.
+- **Statistics panel** — per-selection counts: players and human/bot split,
+  duration, path points, and a per-category event breakdown.
+- **Legend + hover tooltips** — a context-aware key, and hovering a marker reveals
+  its raw event name, category, time, and human/bot owner.
 - **Zoom + pan** — wheel-zoom toward the cursor, drag-to-pan, clamped to the map,
   with a zoom-% readout and Reset.
 - **World-coordinate readout** — the cursor reports the `(x, z)` world units level
@@ -42,7 +50,8 @@ browser  →  vite build → web/dist  →  Hostinger (static, served under /lil
   match, rebases time, pre-projects world coords → minimap pixels, emits compact
   JSON. 26 pytest tests + a 10-point adversarial audit.
 - **`web/`** — React 19 + TypeScript + Vite + Tailwind v4 + Zustand. Layered:
-  `types → lib/render/store → hooks → components`. `lib/` and `render/` are pure.
+  `types → lib/render/store → hooks → components`. `lib/` and `render/` are pure,
+  with 38 Vitest tests covering the pure logic (playback, heatmap, hit-testing, stats).
 
 Full detail lives in [`docs/project_memory/`](docs/project_memory/) (start with
 [`AI_CONTEXT.md`](docs/project_memory/AI_CONTEXT.md)) and
@@ -117,10 +126,18 @@ under the subdirectory.
   app fetches them at runtime same-origin (no CORS). The build runs no Python — the
   ETL JSON is committed and shipped as static assets.
 
-## Project status
+## Scope
 
-~60% of the intended production tool. ETL is complete and frozen; the frontend has
-filters, static visualization, zoom/pan, and reliability hardening. Remaining P0
-work: aggregate heatmap, consistent humans/bots filtering, and timeline playback.
-See [`docs/project_memory/PROJECT_STATE.md`](docs/project_memory/PROJECT_STATE.md)
-and [`ROADMAP.md`](docs/project_memory/ROADMAP.md).
+The core assignment is complete and deployed: a verified, frozen ETL pipeline; the
+full frontend (filters, per-match visualization, timeline playback, aggregate
+density heatmap, statistics, legend, hover tooltips, zoom/pan); and a live static
+build on Hostinger.
+
+Deliberately left as optional polish (not required by the assignment): a
+layer-toggle UI, player click-to-select, a human-only aggregate heatmap
+(`isBot` on aggregate points), colorblind-safe path encoding, and broader frontend
+test coverage. The reasoning, decision records, and remaining backlog are tracked in
+[`docs/project_memory/`](docs/project_memory/) — see
+[`PROJECT_STATE.md`](docs/project_memory/PROJECT_STATE.md),
+[`DECISIONS.md`](docs/project_memory/DECISIONS.md), and
+[`ROADMAP.md`](docs/project_memory/ROADMAP.md).
