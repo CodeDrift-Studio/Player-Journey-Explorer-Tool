@@ -6,6 +6,7 @@ import { DateFilter } from './filters/DateFilter';
 import { MapFilter } from './filters/MapFilter';
 import { MatchFilter } from './filters/MatchFilter';
 import { HeatmapControl } from './HeatmapControl';
+import { StatsPanel } from './StatsPanel';
 
 export function Sidebar() {
   // Aggregate/overview view (no single match selected) is where the density
@@ -21,8 +22,11 @@ export function Sidebar() {
           <HeatmapControl />
         </div>
       )}
+      <div className="shrink-0 border-t border-slate-800 pt-2">
+        <StatsPanel />
+      </div>
       <div className="shrink-0 border-t border-slate-800 pt-2 text-[11px] text-slate-600">
-        Layers · Statistics — next
+        Layers — next
       </div>
     </aside>
   );

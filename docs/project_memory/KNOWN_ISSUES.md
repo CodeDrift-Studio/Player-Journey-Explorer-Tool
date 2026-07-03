@@ -38,8 +38,10 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   flags these. Fix in their own change; do not bundle.
 - 🔴 **Contract kept in sync by hand** across `serialize.py` ↔ `contract.ts`. Relies
   on discipline; drift is possible. Consider schema-driven codegen if it ever bites (D9).
-- 🟡 **Sidebar has placeholder UI** for the statistics panel and layer toggles — not
-  yet functional (ROADMAP M12).
+- 🟡 **Sidebar layer-toggle UI still missing** (ROADMAP M12, remaining half). The
+  **statistics panel is done** (per-selection counts/duration/human-bot split +
+  event breakdown, `StatsPanel.tsx`); the `paths/humans/bots/events` toggle control
+  is not built yet (plumbing + scene support exist).
 - 🟡 **Top-level `README.md` exists; `ARCHITECTURE.md` still absent.** The front door
   for humans is now `README.md` + this folder (ROADMAP M17 done). `ARCHITECTURE.md`
   remains optional. Note: `web/README.md` is still the default Vite template boilerplate.

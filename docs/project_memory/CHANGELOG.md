@@ -12,6 +12,19 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 ## [Unreleased]
 
 ### Added
+- **Statistics panel — ROADMAP M12 (part)** (2026-07-03). Fills the sidebar's stats
+  placeholder with per-selection numbers.
+  - **`lib/stats.ts`** (new, pure, 6 Vitest tests) — `matchStats` (players + human/bot
+    split, path points, duration, per-category event breakdown) and `aggregateStats`
+    (points + event breakdown).
+  - **`components/StatsPanel.tsx`** (new) — thin presenter reading `dataStore`; match
+    view shows players/duration/points/events + a color-dotted category breakdown,
+    aggregate view shows points + breakdown. Wired into `Sidebar.tsx`.
+  - **Verified (headless Chrome):** numbers match the loaded match (15 players 1H·14B,
+    1,174 pts, 42 events) and aggregate (4,723 pts, 345 events), update on selection,
+    and the panel does **not** re-render during playback (it doesn't subscribe to the
+    playback clock) — canvas isolation preserved. The layer-toggle UI (M12's other half)
+    is still pending.
 - **Aggregate density heatmap — ROADMAP M15** (2026-07-03). Replaces the overview's raw
   dots with a binned + blurred **Traffic / Kill / Death / Loot** density field over the
   minimap, selectable from a sidebar control. The assignment's density requirement.

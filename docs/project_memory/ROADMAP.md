@@ -89,15 +89,19 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 - **Dependencies:** none (can precede M8).
 - **Acceptance:** legend matches `palette.ts` exactly and updates if palette changes.
 
-## M12 — Statistics panel + layer-toggle UI  ·  Priority: **P1**  ·  Effort: S–M (1d)
+## M12 — Statistics panel + layer-toggle UI  ·  Priority: **P1**  ·  Status: ✅ **Stats DONE; layer-toggle UI remaining**
 
 - **Objective:** Fill the sidebar placeholder (`"Layers · Statistics — next"`) —
   per-selection stats (counts, duration, human/bot split) and layer-toggle UI.
-- **Note — most of the layer plumbing already exists:** `filterStore` has
-  `layers: { paths, humans, bots, events, heatmap }` + a `toggleLayer` action, and
-  `render/scene.ts` already honors `paths/humans/bots/events`. This milestone is
-  primarily the **UI** to drive `toggleLayer`, plus the stats readout. (`heatmap`
-  rendering itself is M15.)
+- **Done (2026-07-03):** the **statistics panel** — `lib/stats.ts` (pure `matchStats`/
+  `aggregateStats`, 6 Vitest tests) + `components/StatsPanel.tsx` in the sidebar. Match
+  view shows players + human/bot split, duration, points, and a per-category event
+  breakdown; aggregate view shows points + event breakdown. Browser-verified: numbers
+  match the selection, update on change, and the panel does **not** re-render during
+  playback (no canvas coupling).
+- **Remaining:** the **layer-toggle UI** to drive `filterStore.toggleLayer`
+  (`paths/humans/bots/events`) — plumbing + `render/scene.ts` support already exist;
+  this is just the control (sidebar now shows a `"Layers — next"` note).
 - **Files:** `components/Sidebar.tsx`, new toggle component in `components/`; read
   `dataStore` / `filterStore`; `lib/format.ts` for display formatting.
 - **Dependencies:** none (state + scene support already in place).
@@ -172,8 +176,8 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 
 ### Suggested sequence
 
-M7 (commit), M8 (zoom+pan), **M17 (deploy — live on Hostinger at `/lila/`)**, and
-**M9 (timeline + playback)** are done — the core interactions are complete. Next up is
-the P1 polish tier: `M10, M11, M12, M13` (tooltip/selection, legend, stats + layer-toggle
-UI, Vitest coverage — parallelizable) → `M14, M16` (P2; `M15` heatmap is done). M11
-(legend) can be done anytime.
+M7 (commit), M8 (zoom+pan), **M17 (deploy)**, **M9 (playback)**, and **M15 (heatmap)**
+are done, and **M12's statistics panel** shipped (its layer-toggle UI remains). The
+core interactions + density overview + stats are complete. Next in the P1 polish tier:
+**`M11` (legend) → `M10` (tooltip/selection) → `M13` (Vitest coverage)**, plus the M12
+layer-toggle UI; then `M14, M16` (P2). M11 (legend) can be done anytime.

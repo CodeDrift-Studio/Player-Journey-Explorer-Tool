@@ -7,15 +7,16 @@
 
 ## Current completion percentage
 
-**~75%** of the intended production tool.
+**~77%** of the intended production tool.
 
 - **ETL pipeline: 100%** — complete, verified, frozen, committed.
-- **Frontend: ~72%** — scaffold, data loading, filters, static visualization,
+- **Frontend: ~75%** — scaffold, data loading, filters, static visualization,
   polish, zoom/pan (all `1eb6b92`), the rejected-promise cache fix (`c6d0090`),
-  **timeline playback** (`b647707`), and now the **aggregate density heatmap**
-  (Traffic/Kill/Death/Loot) are done and building green. All core interactions
-  (filter → visualize → play back → density overview) are complete. Remaining is P1
-  polish: statistics panel, legend, tooltips/selection, and broader unit-test coverage.
+  **timeline playback** (`b647707`), the **aggregate density heatmap**
+  (Traffic/Kill/Death/Loot, `fda6e65`), and now the **statistics panel** are done and
+  building green. Core interactions + density overview + per-selection stats are
+  complete. Remaining P1 polish: legend, tooltips/selection, layer-toggle UI, broader
+  unit-test coverage.
 
 ---
 
@@ -71,6 +72,11 @@
   binning/blur/normalize in `lib/heatmap.ts` (7 Vitest tests); painted via an offscreen
   texel grid blitted scaled in `render/scene.ts`. Browser-verified on the busiest
   aggregate (19,382 pts): 4 modes distinct, redraw avg 2.3 ms / max 5.9 ms. See ROADMAP M15.
+- **M12 (part) — Statistics panel (P1).** Per-selection stats in the sidebar
+  (`components/StatsPanel.tsx`) from pure `lib/stats.ts` (6 Vitest tests): match view =
+  players + human/bot split, duration, points, per-category event breakdown; aggregate =
+  points + event breakdown. Browser-verified correct + updates on selection + no
+  re-render during playback. Layer-toggle UI (M12's other half) still pending.
 
 ## Remaining milestones
 
@@ -206,11 +212,11 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 ## Last verified working commit
 
-- Baseline: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix (`c6d0090`) + timeline
-  playback (M9, `b647707`) + subdirectory deploy (`a43d269`, live on Hostinger) — all
-  on `origin/main`. The **aggregate density heatmap (M15)** is the newest change:
-  `npm run build` green, **27/27 Vitest tests** pass, lint clean on changed files,
-  browser-verified.
+- On `origin/main`: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix (`c6d0090`) + timeline
+  playback (M9, `b647707`) + subdirectory deploy (`a43d269`, live on Hostinger) +
+  aggregate density heatmap (M15, `fda6e65`). The **statistics panel (M12 part)** is the
+  newest change: `npm run build` green, **33/33 Vitest tests** pass, lint clean on
+  changed files, browser-verified.
 - ETL freeze reference point remains `5a9d6bd` (26 tests + 10/10 audit pass).
 - Git history is linear and clean; `.claude/settings.local.json` (a local settings
   file) is now `.gitignore`d and no longer tracked.
@@ -223,10 +229,9 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
   playback runs on a synthetic wall-clock (a full match plays over ~8 s at 1× because
   raw telemetry spans <1 s); aggregate/overview mode has no timeline (controls disabled
   with a message). Layer toggles affect the canvas but not the playback stat counts.
-- Layer visibility state (`paths/humans/bots/events/heatmap`) exists in
-  `filterStore` and `scene.ts` honors it, but there is **no toggle UI** (the
-  sidebar shows a "Layers · Statistics — next" placeholder). The `heatmap` flag
-  exists but nothing renders a heatmap yet.
+- Layer visibility state (`paths/humans/bots/events`) exists in `filterStore` and
+  `scene.ts` honors it, but there is **no toggle UI** yet (the statistics panel now
+  fills the sidebar; a `"Layers — next"` note marks the remaining toggle control).
 - No hover tooltip / marker hit-testing / player selection (only a world-coord
   cursor readout).
 - Aggregate points carry no `isBot` flag, so the overview cannot yet filter to
@@ -248,6 +253,6 @@ Stabilization/delivery phase (see the P0 backlog). In order:
    offscreen caching profiled and deferred as unnecessary.
 4. ✅ **Aggregate density heatmap** (Traffic/Kill/Death/Loot) replacing raw dots —
    done 2026-07-03 (assignment requirement).
-5. **P1 polish (next), in order:** statistics panel → legend → tooltips/selection;
-   broader Vitest coverage alongside.
+5. **P1 polish, in order:** ✅ statistics panel (done) → **legend (next)** →
+   tooltips/selection → layer-toggle UI; broader Vitest coverage alongside.
 6. Consistent **humans/bots filtering** in aggregate mode (P2).
