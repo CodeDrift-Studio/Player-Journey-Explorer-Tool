@@ -51,16 +51,14 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
 ## Missing UI (state/plumbing exists, no controls)
 
 - 🟡 **Layer toggles have no UI.** `filterStore.layers`
-  (`paths/humans/bots/events/heatmap`) + `toggleLayer` exist and `render/scene.ts`
-  honors `paths/humans/bots/events` **in match mode only**, but the sidebar only
-  shows a `"Layers · Statistics — next"` placeholder, so layers are stuck at their
-  defaults (all on except `heatmap`). Wire the toggle UI (ROADMAP M12).
-- 🟡 **Aggregate mode ignores the humans/bots toggles.** `drawAggPoints`/`drawAggEvents`
-  in `render/scene.ts` render all points regardless of `layers.humans/bots` (and the
+  (`paths/humans/bots/events`) + `toggleLayer` exist and `render/scene.ts` honors them
+  **in match mode only**, but the sidebar only shows a `"Layers · Statistics — next"`
+  placeholder, so layers are stuck at their defaults (all on). Wire the toggle UI
+  (ROADMAP M12).
+- 🟡 **Aggregate mode ignores the humans/bots toggles.** `drawAggEvents` in
+  `render/scene.ts` renders all events regardless of `layers.humans/bots` (and the
   aggregate has no `isBot` flag), so the two view modes behave inconsistently
-  (stabilization P0 #5 / ROADMAP M14).
-- 🟡 **`heatmap` layer flag renders nothing.** The flag exists (default off) but no
-  heatmap draw path exists; the aggregate is drawn as faint dots (ROADMAP M15).
+  (stabilization P0 #5 / ROADMAP M14). The aggregate heatmap is likewise all-actors.
 - 🟡 **No hover tooltip / marker hit-testing / player selection.** Only a
   world-coordinate cursor readout exists (ROADMAP M10).
 - 🟡 **No legend.** `palette.ts` is the intended single source for it (ROADMAP M11).
@@ -72,8 +70,10 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   match (Lockdown, 15 players / 1,174 points) in headless Chrome measured `renderScene`
   at 0.07 ms avg / 0.5 ms max — ≈33× under the 16.7 ms 60 fps budget. Caching was
   deferred (no perf commit). Revisit only if a future dense overlay changes the budget.
-- 🟡 **Aggregate rendered as raw dots.** A binned/blurred density heatmap would be
-  both clearer and cheaper on the densest map/day (ROADMAP M15).
+- 🟢 **Aggregate density heatmap — DONE** (2026-07-03, ROADMAP M15). Raw dots replaced
+  by a binned+blurred Traffic/Kill/Death/Loot density field with a mode selector.
+  Browser-measured redraw cost avg 2.3 ms / max 5.9 ms on the busiest aggregate
+  (19,382 pts) — comfortably within the 60 fps budget, so no caching needed.
 - 🟢 **Per-frame allocations in the render path — checked** (resolved for now). Playback
   landed and the measured per-frame cost is negligible; `render/scene.ts` does not build
   new arrays per frame. Revisit if the render budget tightens.

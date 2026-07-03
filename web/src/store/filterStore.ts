@@ -5,9 +5,10 @@
  */
 
 import { create } from 'zustand';
+import type { HeatmapMode } from '../lib/heatmap';
 import type { MapId } from '../types/contract';
 
-export type LayerKey = 'paths' | 'humans' | 'bots' | 'events' | 'heatmap';
+export type LayerKey = 'paths' | 'humans' | 'bots' | 'events';
 
 interface FilterState {
   mapId: MapId | null;
@@ -15,17 +16,21 @@ interface FilterState {
   /** null = aggregate (whole map+date) view; a string = a single match. */
   matchId: string | null;
   layers: Record<LayerKey, boolean>;
+  /** Which density the aggregate heatmap shows (Traffic/Kill/Death/Loot). */
+  heatmapMode: HeatmapMode;
   setMap: (mapId: MapId | null) => void;
   setDate: (date: string | null) => void;
   setMatch: (matchId: string | null) => void;
   toggleLayer: (key: LayerKey) => void;
+  setHeatmapMode: (mode: HeatmapMode) => void;
 }
 
 export const useFilterStore = create<FilterState>((set) => ({
   mapId: null,
   date: null,
   matchId: null,
-  layers: { paths: true, humans: true, bots: true, events: true, heatmap: false },
+  layers: { paths: true, humans: true, bots: true, events: true },
+  heatmapMode: 'traffic',
 
   // Changing map or date invalidates the selected match (it belonged to the old
   // scope), so we drop back to the aggregate view.
@@ -34,4 +39,5 @@ export const useFilterStore = create<FilterState>((set) => ({
   setMatch: (matchId) => set({ matchId }),
   toggleLayer: (key) =>
     set((s) => ({ layers: { ...s.layers, [key]: !s.layers[key] } })),
+  setHeatmapMode: (heatmapMode) => set({ heatmapMode }),
 }));

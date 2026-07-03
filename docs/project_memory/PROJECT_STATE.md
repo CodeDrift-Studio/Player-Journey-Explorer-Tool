@@ -7,15 +7,15 @@
 
 ## Current completion percentage
 
-**~70%** of the intended production tool.
+**~75%** of the intended production tool.
 
 - **ETL pipeline: 100%** — complete, verified, frozen, committed.
-- **Frontend: ~65%** — scaffold, data loading, filters, static visualization,
-  polish, zoom/pan (all `1eb6b92`), the rejected-promise cache fix (`c6d0090`), and
-  now **timeline playback** (`b647707`) are done, committed, and building green
-  (verified 2026-07-02). All three core interactions (filter → visualize → play back)
-  are complete. Remaining is P1 polish: tooltip/selection, legend, stats + layer-toggle
-  UI, and broader unit-test coverage.
+- **Frontend: ~72%** — scaffold, data loading, filters, static visualization,
+  polish, zoom/pan (all `1eb6b92`), the rejected-promise cache fix (`c6d0090`),
+  **timeline playback** (`b647707`), and now the **aggregate density heatmap**
+  (Traffic/Kill/Death/Loot) are done and building green. All core interactions
+  (filter → visualize → play back → density overview) are complete. Remaining is P1
+  polish: statistics panel, legend, tooltips/selection, and broader unit-test coverage.
 
 ---
 
@@ -66,6 +66,11 @@
   `MapViewport`, pure logic in `lib/playback.ts` with 20 Vitest tests) so it never
   re-renders the map/filters — only the Timeline. Offscreen-canvas caching deferred as
   unnecessary after profiling (see CHANGELOG). See ROADMAP M9 for detail.
+- **M15 — Aggregate density heatmap (P0, assignment).** Traffic/Kill/Death/Loot
+  binned+blurred density replacing the raw dots, with a sidebar mode selector. Pure
+  binning/blur/normalize in `lib/heatmap.ts` (7 Vitest tests); painted via an offscreen
+  texel grid blitted scaled in `render/scene.ts`. Browser-verified on the busiest
+  aggregate (19,382 pts): 4 modes distinct, redraw avg 2.3 ms / max 5.9 ms. See ROADMAP M15.
 
 ## Remaining milestones
 
@@ -201,15 +206,11 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 ## Last verified working commit
 
-- **`b647707` — "feat(playback): implement timeline controls and progressive
-  rendering"** is the latest commit: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix
-  (`c6d0090`) + timeline playback (M9 Phase A). `npm run build` green, 20/20 Vitest
-  tests pass, lint clean on changed files.
-- **Uncommitted in the working tree** (not yet committed — the subdirectory deploy fix
-  and its docs): `base: '/lila/'` in `vite.config.ts`, `import.meta.env.BASE_URL` in
-  `lib/data.ts` (the matching `MapViewport.tsx` line rode into `b647707`), plus these
-  `docs/project_memory/*` + `README.md` updates. This is what the live Hostinger build
-  was produced from.
+- Baseline: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix (`c6d0090`) + timeline
+  playback (M9, `b647707`) + subdirectory deploy (`a43d269`, live on Hostinger) — all
+  on `origin/main`. The **aggregate density heatmap (M15)** is the newest change:
+  `npm run build` green, **27/27 Vitest tests** pass, lint clean on changed files,
+  browser-verified.
 - ETL freeze reference point remains `5a9d6bd` (26 tests + 10/10 audit pass).
 - Git history is linear and clean; `.claude/settings.local.json` (a local settings
   file) is now `.gitignore`d and no longer tracked.
@@ -245,7 +246,8 @@ Stabilization/delivery phase (see the P0 backlog). In order:
    `/lila/`, 2026-07-02.**
 3. ✅ **Timeline + playback** (the last core interaction) — done `b647707`;
    offscreen caching profiled and deferred as unnecessary.
-4. **P1 polish (next):** stats panel, legend, tooltips/selection, broader Vitest
-   coverage.
-5. Aggregate density **heatmap** (Kill/Death/Loot/Traffic) replacing raw dots (P2).
+4. ✅ **Aggregate density heatmap** (Traffic/Kill/Death/Loot) replacing raw dots —
+   done 2026-07-03 (assignment requirement).
+5. **P1 polish (next), in order:** statistics panel → legend → tooltips/selection;
+   broader Vitest coverage alongside.
 6. Consistent **humans/bots filtering** in aggregate mode (P2).

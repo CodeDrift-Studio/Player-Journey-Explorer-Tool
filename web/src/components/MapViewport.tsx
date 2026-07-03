@@ -54,6 +54,7 @@ export function MapViewport() {
   const date = useFilterStore((s) => s.date);
   const matchId = useFilterStore((s) => s.matchId);
   const layers = useFilterStore((s) => s.layers);
+  const heatmapMode = useFilterStore((s) => s.heatmapMode);
   const maps = useDataStore((s) => s.manifest?.maps);
   const match = useDataStore((s) => s.match);
   const aggregate = useDataStore((s) => s.aggregate);
@@ -85,10 +86,11 @@ export function MapViewport() {
     match: typeof match;
     aggregate: typeof aggregate;
     layers: typeof layers;
+    heatmapMode: typeof heatmapMode;
     size: number;
     view: View;
     time: number | null;
-  }>({ image, match, aggregate, layers, size, view, time: null });
+  }>({ image, match, aggregate, layers, heatmapMode, size, view, time: null });
 
   /** The full pixel->screen transform for the current size + user view. */
   const currentTransform = useCallback((w: number, h: number): ViewTransform => {
@@ -128,6 +130,7 @@ export function MapViewport() {
       aggregate: s.aggregate,
       layers: s.layers,
       time: s.time,
+      heatmapMode: s.heatmapMode,
     });
   }, [currentTransform]);
 
@@ -144,12 +147,13 @@ export function MapViewport() {
       match,
       aggregate,
       layers,
+      heatmapMode,
       size,
       view,
       time: pb.duration > 0 ? pb.time : null,
     };
     schedule();
-  }, [image, match, aggregate, layers, size, view, schedule]);
+  }, [image, match, aggregate, layers, heatmapMode, size, view, schedule]);
 
   // Playback -> canvas, driven imperatively so advancing `time` ~60×/s never
   // re-renders this component (or the filters). Covers both scrubbing (paused) and

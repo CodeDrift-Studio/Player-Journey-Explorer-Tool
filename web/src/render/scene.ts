@@ -9,15 +9,17 @@
  * context + params and draws — trivially reasoned about, easy to extend.
  */
 
+import { blurGrid, buildDensityGrid, heatmapPoints, type HeatmapMode } from '../lib/heatmap';
 import { pathHead } from '../lib/playback';
 import { pixelToScreen, type ViewTransform } from '../lib/viewport';
 import type { LayerKey } from '../store/filterStore';
 import type { Aggregate, EventCategory, Match } from '../types/contract';
-import { COLORS } from './palette';
+import { COLORS, heatColor } from './palette';
 
 const GRID_DIVISIONS = 8;
 const MARKER_R = 4; // event marker radius, in screen px (constant size)
 const HEAD_R = 2.75; // playback "current position" dot radius, screen px
+const HEATMAP_BIN_PX = 12; // density bin size in minimap px (~86×86 grid over 1024)
 
 type Ctx = CanvasRenderingContext2D;
 type Layers = Record<LayerKey, boolean>;
@@ -39,10 +41,12 @@ export interface SceneArgs {
    * draws — behavior identical to before playback existed.
    */
   time: number | null;
+  /** Which density the aggregate/overview heatmap shows (ignored in match mode). */
+  heatmapMode: HeatmapMode;
 }
 
 export function renderScene(a: SceneArgs): void {
-  const { ctx, width, height, size, transform, image, match, aggregate, layers, time } = a;
+  const { ctx, width, height, size, transform, image, match, aggregate, layers, time, heatmapMode } = a;
 
   ctx.fillStyle = '#0a0e17';
   ctx.fillRect(0, 0, width, height);
@@ -55,7 +59,7 @@ export function renderScene(a: SceneArgs): void {
     if (layers.paths) drawPaths(ctx, match, transform, layers, time);
     if (layers.events) drawMatchEvents(ctx, match, transform, layers, time);
   } else if (aggregate) {
-    if (layers.paths) drawAggPoints(ctx, aggregate, transform);
+    drawHeatmap(ctx, aggregate, transform, size, heatmapMode);
     if (layers.events) drawAggEvents(ctx, aggregate, transform);
   }
 }
@@ -174,15 +178,42 @@ function drawMatchEvents(
   }
 }
 
-function drawAggPoints(ctx: Ctx, agg: Aggregate, t: ViewTransform): void {
-  // Faint dots convey density (a lightweight precursor to the heatmap layer).
-  ctx.fillStyle = COLORS.human;
-  ctx.globalAlpha = 0.25;
-  for (const [px, py] of agg.points) {
-    const [sx, sy] = pixelToScreen(px, py, t);
-    ctx.fillRect(sx - 0.5, sy - 0.5, 1.5, 1.5);
+/**
+ * Aggregate density heatmap. Bins the mode's points (traffic movement, or
+ * kill/death/loot event positions) into a coarse minimap-pixel grid, smooths it,
+ * normalizes, and paints one texel per bin into a small offscreen canvas — then
+ * blits it scaled over the map rect with smoothing for a soft field. The grid is
+ * in pixel space (independent of zoom/pan), so it aligns with the minimap and the
+ * blit follows the current transform.
+ */
+function drawHeatmap(ctx: Ctx, agg: Aggregate, t: ViewTransform, size: number, mode: HeatmapMode): void {
+  const pts = heatmapPoints(agg, mode);
+  if (pts.length === 0) return;
+  const g = blurGrid(buildDensityGrid(pts, size, HEATMAP_BIN_PX), 1);
+  if (g.max <= 0) return;
+
+  const off = document.createElement('canvas');
+  off.width = g.cols;
+  off.height = g.rows;
+  const octx = off.getContext('2d');
+  if (!octx) return;
+  const img = octx.createImageData(g.cols, g.rows);
+  for (let i = 0; i < g.grid.length; i++) {
+    const [r, gg, b, a] = heatColor(mode, g.grid[i] / g.max);
+    const j = i * 4;
+    img.data[j] = r;
+    img.data[j + 1] = gg;
+    img.data[j + 2] = b;
+    img.data[j + 3] = a;
   }
-  ctx.globalAlpha = 1;
+  octx.putImageData(img, 0, 0);
+
+  const [x0, y0] = pixelToScreen(0, 0, t);
+  const [x1, y1] = pixelToScreen(size, size, t);
+  const prevSmoothing = ctx.imageSmoothingEnabled;
+  ctx.imageSmoothingEnabled = true;
+  ctx.drawImage(off, x0, y0, x1 - x0, y1 - y0);
+  ctx.imageSmoothingEnabled = prevSmoothing;
 }
 
 function drawAggEvents(ctx: Ctx, agg: Aggregate, t: ViewTransform): void {

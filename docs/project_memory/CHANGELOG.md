@@ -12,6 +12,27 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 ## [Unreleased]
 
 ### Added
+- **Aggregate density heatmap — ROADMAP M15** (2026-07-03). Replaces the overview's raw
+  dots with a binned + blurred **Traffic / Kill / Death / Loot** density field over the
+  minimap, selectable from a sidebar control. The assignment's density requirement.
+  - **`lib/heatmap.ts`** (new, pure) — mode→points selection (movement for Traffic;
+    event positions by category otherwise); pixel-space density-grid binning with
+    edge-clamping (coords are unclamped by design); separable [1,2,1] box blur;
+    max-normalization. 7 Vitest tests.
+  - **`render/palette.ts`** — per-mode base colors (reusing the path/event hues) +
+    `heatColor(mode,t)` ramp (faint tint → white-hot, alpha `t^0.6`).
+  - **`render/scene.ts`** — `drawHeatmap` paints one texel per bin into a small offscreen
+    canvas, then blits it scaled + smoothed over the map rect (aligned to the same
+    `pixelToScreen` transform, so it follows zoom/pan). Replaces `drawAggPoints`.
+  - **`store/filterStore.ts`** — removed the dead `heatmap` layer flag; added
+    `heatmapMode` + `setHeatmapMode`.
+  - **`components/HeatmapControl.tsx`** (new) — sidebar mode selector + low→high intensity
+    scale, shown only in aggregate view.
+  - **Verified (headless Chrome):** on the busiest aggregate (AmbroseValley 2026-02-10,
+    19,382 points) all four modes render distinctly, the selector updates the field,
+    zoom/pan works, and **heatmap redraw cost is avg 2.3 ms / max 5.9 ms** — within the
+    60 fps budget, so no offscreen caching of the density field is needed. No regression
+    to match rendering or playback (MapViewport still 0 re-renders during playback).
 - **Timeline + playback — ROADMAP M9, Phase A** (2026-07-02, committed `b647707`). The
   headline single-match interaction: play/pause, scrub, 0.5/1/2/4× speed, progressive
   path reveal, and event reveal over time.
