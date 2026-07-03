@@ -30,6 +30,7 @@ import { renderScene } from '../render/scene';
 import { useDataStore } from '../store/dataStore';
 import { useFilterStore } from '../store/filterStore';
 import { usePlaybackStore } from '../store/playbackStore';
+import { Legend } from './Legend';
 
 const DEFAULT_SIZE = 1024;
 const ZOOM_WHEEL_SENSITIVITY = 0.0015; // per wheel delta unit
@@ -331,6 +332,9 @@ export function MapViewport() {
         onPointerCancel={endDrag}
         onPointerLeave={() => setCursor(null)}
       />
+
+      {/* Legend — top-right, context-aware key for colors/glyphs (over the map). */}
+      {!busy && !failed && mapId && <Legend />}
 
       {/* Zoom controls — bottom-left, clear of the coord readout. */}
       <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[11px]">

@@ -63,7 +63,9 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   (stabilization P0 #5 / ROADMAP M14). The aggregate heatmap is likewise all-actors.
 - 🟡 **No hover tooltip / marker hit-testing / player selection.** Only a
   world-coordinate cursor readout exists (ROADMAP M10).
-- 🟡 **No legend.** `palette.ts` is the intended single source for it (ROADMAP M11).
+- 🟢 **Legend — DONE** (2026-07-03, ROADMAP M11). Context-aware viewport overlay
+  (`Legend.tsx`) keyed off `palette.ts`: path colors + event glyphs in match view,
+  heatmap intensity scale + glyphs in aggregate view.
 
 ## Performance opportunities
 

@@ -7,16 +7,16 @@
 
 ## Current completion percentage
 
-**~77%** of the intended production tool.
+**~78%** of the intended production tool.
 
 - **ETL pipeline: 100%** — complete, verified, frozen, committed.
-- **Frontend: ~75%** — scaffold, data loading, filters, static visualization,
+- **Frontend: ~77%** — scaffold, data loading, filters, static visualization,
   polish, zoom/pan (all `1eb6b92`), the rejected-promise cache fix (`c6d0090`),
   **timeline playback** (`b647707`), the **aggregate density heatmap**
-  (Traffic/Kill/Death/Loot, `fda6e65`), and now the **statistics panel** are done and
-  building green. Core interactions + density overview + per-selection stats are
-  complete. Remaining P1 polish: legend, tooltips/selection, layer-toggle UI, broader
-  unit-test coverage.
+  (Traffic/Kill/Death/Loot, `fda6e65`), the **statistics panel** (`8d00eb9`), and now
+  the **legend** are done and building green. Core interactions + density overview +
+  stats + legend are complete. Remaining P1 polish: tooltips/selection, layer-toggle
+  UI, broader unit-test coverage.
 
 ---
 
@@ -77,6 +77,10 @@
   players + human/bot split, duration, points, per-category event breakdown; aggregate =
   points + event breakdown. Browser-verified correct + updates on selection + no
   re-render during playback. Layer-toggle UI (M12's other half) still pending.
+- **M11 — Legend (P1).** Context-aware viewport overlay (`components/Legend.tsx`):
+  path colors + event glyphs in match view, heatmap intensity scale + glyphs in
+  aggregate view. Sourced from `palette.ts`, `pointer-events:none`, no re-render during
+  playback. Browser-verified.
 
 ## Remaining milestones
 
@@ -214,9 +218,9 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 
 - On `origin/main`: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix (`c6d0090`) + timeline
   playback (M9, `b647707`) + subdirectory deploy (`a43d269`, live on Hostinger) +
-  aggregate density heatmap (M15, `fda6e65`). The **statistics panel (M12 part)** is the
-  newest change: `npm run build` green, **33/33 Vitest tests** pass, lint clean on
-  changed files, browser-verified.
+  aggregate density heatmap (M15, `fda6e65`) + statistics panel (M12 part, `8d00eb9`).
+  The **legend (M11)** is the newest change: `npm run build` green, **33/33 Vitest
+  tests** pass, lint clean on changed files, browser-verified.
 - ETL freeze reference point remains `5a9d6bd` (26 tests + 10/10 audit pass).
 - Git history is linear and clean; `.claude/settings.local.json` (a local settings
   file) is now `.gitignore`d and no longer tracked.
@@ -253,6 +257,6 @@ Stabilization/delivery phase (see the P0 backlog). In order:
    offscreen caching profiled and deferred as unnecessary.
 4. ✅ **Aggregate density heatmap** (Traffic/Kill/Death/Loot) replacing raw dots —
    done 2026-07-03 (assignment requirement).
-5. **P1 polish, in order:** ✅ statistics panel (done) → **legend (next)** →
-   tooltips/selection → layer-toggle UI; broader Vitest coverage alongside.
+5. **P1 polish, in order:** ✅ statistics panel · ✅ legend → **tooltips/selection
+   (next)** → layer-toggle UI; broader Vitest coverage alongside.
 6. Consistent **humans/bots filtering** in aggregate mode (P2).

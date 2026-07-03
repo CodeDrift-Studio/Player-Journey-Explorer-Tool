@@ -12,6 +12,14 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 ## [Unreleased]
 
 ### Added
+- **Legend — ROADMAP M11** (2026-07-03). Context-aware key overlaid top-right of the
+  viewport (`components/Legend.tsx`). Match view: path colors (Human/Bot) + the four
+  event glyphs (inline SVGs mirroring `scene.ts` drawMarker); aggregate view: the active
+  heatmap mode's low→high intensity scale + the event glyphs. Reads `render/palette.ts`
+  (COLORS/HEATMAP_BASE) so it can't drift from the canvas; `pointer-events:none` so it
+  never blocks map interaction; subscribes only to `filterStore`, so it doesn't
+  re-render during playback. Browser-verified (correct per-mode content, updates on mode
+  change, no playback re-render, no interaction blocking).
 - **Statistics panel — ROADMAP M12 (part)** (2026-07-03). Fills the sidebar's stats
   placeholder with per-selection numbers.
   - **`lib/stats.ts`** (new, pure, 6 Vitest tests) — `matchStats` (players + human/bot

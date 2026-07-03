@@ -82,12 +82,18 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 - **Acceptance:** tooltip shows `raw`/category/time near the cursor; hit-testing
   accounts for the zoom transform; selecting a player dims the others.
 
-## M11 — Legend  ·  Priority: **P1**  ·  Effort: S (0.5d)
+## M11 — Legend  ·  Priority: **P1**  ·  Status: ✅ **DONE**
 
 - **Objective:** On-screen key for path colors and the four marker glyphs.
-- **Files:** `components/` (legend), reads `render/palette.ts`.
-- **Dependencies:** none (can precede M8).
-- **Acceptance:** legend matches `palette.ts` exactly and updates if palette changes.
+- **Delivered (2026-07-03):** `components/Legend.tsx` — a context-aware overlay top-right
+  of the viewport. Match view: path colors (Human/Bot) + the 4 event glyphs (SVGs
+  mirroring `scene.ts` drawMarker); aggregate view: the active heatmap mode's intensity
+  scale + the event glyphs. Reads `render/palette.ts` (COLORS/HEATMAP_BASE) so it can't
+  drift from the canvas; `pointer-events:none` so it never blocks map interaction;
+  subscribes only to `filterStore`, so it doesn't re-render during playback.
+- **Acceptance — met (browser-verified):** correct entries per view mode, updates when
+  the heatmap mode changes, colors sourced from `palette.ts`, no re-render during
+  playback, doesn't obstruct the canvas.
 
 ## M12 — Statistics panel + layer-toggle UI  ·  Priority: **P1**  ·  Status: ✅ **Stats DONE; layer-toggle UI remaining**
 
@@ -179,5 +185,5 @@ Priority key: **P0** = core, blocks a usable tool · **P1** = important polish �
 M7 (commit), M8 (zoom+pan), **M17 (deploy)**, **M9 (playback)**, and **M15 (heatmap)**
 are done, and **M12's statistics panel** shipped (its layer-toggle UI remains). The
 core interactions + density overview + stats are complete. Next in the P1 polish tier:
-**`M11` (legend) → `M10` (tooltip/selection) → `M13` (Vitest coverage)**, plus the M12
-layer-toggle UI; then `M14, M16` (P2). M11 (legend) can be done anytime.
+✅ `M11` (legend, done) → **`M10` (tooltip/selection, next)** → `M13` (Vitest coverage),
+plus the M12 layer-toggle UI; then `M14, M16` (P2).
