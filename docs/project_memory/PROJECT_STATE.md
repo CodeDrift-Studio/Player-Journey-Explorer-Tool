@@ -7,16 +7,16 @@
 
 ## Current completion percentage
 
-**~78%** of the intended production tool.
+**~80%** of the intended production tool.
 
 - **ETL pipeline: 100%** — complete, verified, frozen, committed.
-- **Frontend: ~77%** — scaffold, data loading, filters, static visualization,
+- **Frontend: ~80%** — scaffold, data loading, filters, static visualization,
   polish, zoom/pan (all `1eb6b92`), the rejected-promise cache fix (`c6d0090`),
-  **timeline playback** (`b647707`), the **aggregate density heatmap**
-  (Traffic/Kill/Death/Loot, `fda6e65`), the **statistics panel** (`8d00eb9`), and now
-  the **legend** are done and building green. Core interactions + density overview +
-  stats + legend are complete. Remaining P1 polish: tooltips/selection, layer-toggle
-  UI, broader unit-test coverage.
+  **timeline playback** (`b647707`), the **aggregate density heatmap** (`fda6e65`),
+  the **statistics panel** (`8d00eb9`), the **legend** (`fcf176a`), and now
+  **event-marker hover tooltips** are done and building green. Core interactions +
+  density overview + stats + legend + inspection are complete. Remaining P1 polish:
+  layer-toggle UI, player click-to-select, broader unit-test coverage.
 
 ---
 
@@ -81,6 +81,11 @@
   path colors + event glyphs in match view, heatmap intensity scale + glyphs in
   aggregate view. Sourced from `palette.ts`, `pointer-events:none`, no re-render during
   playback. Browser-verified.
+- **M10 (part) — Event-marker hover tooltips (P1).** `lib/hitTest.ts` (pure,
+  `findEventAtPixel`, 5 Vitest tests) + a cursor-following overlay in `MapViewport`
+  showing a hovered event's raw name/category/time/owner. Zoom-aware (radius ÷ scale),
+  time-gated, `pointer-events:none`, fires only on mouse move (playback stays isolated).
+  Browser-verified. Click-to-select (M10's other half) still pending.
 
 ## Remaining milestones
 
@@ -217,10 +222,10 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 ## Last verified working commit
 
 - On `origin/main`: full frontend (M3–M8, `1eb6b92`) + P0 #1 fix (`c6d0090`) + timeline
-  playback (M9, `b647707`) + subdirectory deploy (`a43d269`, live on Hostinger) +
-  aggregate density heatmap (M15, `fda6e65`) + statistics panel (M12 part, `8d00eb9`).
-  The **legend (M11)** is the newest change: `npm run build` green, **33/33 Vitest
-  tests** pass, lint clean on changed files, browser-verified.
+  playback (M9, `b647707`) + subdirectory deploy (`a43d269`, live) + aggregate heatmap
+  (M15, `fda6e65`) + statistics panel (M12 part, `8d00eb9`) + legend (M11, `fcf176a`).
+  The **hover tooltips (M10 part)** are the newest change: `npm run build` green,
+  **38/38 Vitest tests** pass, lint clean on changed files, browser-verified.
 - ETL freeze reference point remains `5a9d6bd` (26 tests + 10/10 audit pass).
 - Git history is linear and clean; `.claude/settings.local.json` (a local settings
   file) is now `.gitignore`d and no longer tracked.
@@ -236,8 +241,8 @@ points are compact 3-tuples; coordinates are minimap pixels (0..1024, unclamped)
 - Layer visibility state (`paths/humans/bots/events`) exists in `filterStore` and
   `scene.ts` honors it, but there is **no toggle UI** yet (the statistics panel now
   fills the sidebar; a `"Layers — next"` note marks the remaining toggle control).
-- No hover tooltip / marker hit-testing / player selection (only a world-coord
-  cursor readout).
+- Event-marker hover tooltips exist (raw/category/time/owner); **player
+  click-to-select + dimming** and **path hover** are not built yet (ROADMAP M10 remainder).
 - Aggregate points carry no `isBot` flag, so the overview cannot yet filter to
   humans only.
 - Frontend tests are minimal — Vitest is set up with 20 tests for the pure playback
@@ -257,6 +262,6 @@ Stabilization/delivery phase (see the P0 backlog). In order:
    offscreen caching profiled and deferred as unnecessary.
 4. ✅ **Aggregate density heatmap** (Traffic/Kill/Death/Loot) replacing raw dots —
    done 2026-07-03 (assignment requirement).
-5. **P1 polish, in order:** ✅ statistics panel · ✅ legend → **tooltips/selection
-   (next)** → layer-toggle UI; broader Vitest coverage alongside.
+5. **P1 polish:** ✅ statistics panel · ✅ legend · ✅ hover tooltips → **remaining:**
+   layer-toggle UI, player click-to-select, broader Vitest coverage.
 6. Consistent **humans/bots filtering** in aggregate mode (P2).

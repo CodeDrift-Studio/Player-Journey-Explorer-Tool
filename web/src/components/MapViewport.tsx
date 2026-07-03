@@ -14,6 +14,8 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useImage } from '../hooks/useImage';
+import { findEventAtPixel, type EventHit } from '../lib/hitTest';
+import { formatSeconds } from '../lib/format';
 import { pixelToWorld } from '../lib/mapCoords';
 import {
   applyView,
@@ -26,6 +28,7 @@ import {
   type ViewTransform,
 } from '../lib/viewport';
 import { advanceTime, playbackRate } from '../lib/playback';
+import { COLORS } from '../render/palette';
 import { renderScene } from '../render/scene';
 import { useDataStore } from '../store/dataStore';
 import { useFilterStore } from '../store/filterStore';
@@ -34,6 +37,7 @@ import { Legend } from './Legend';
 
 const DEFAULT_SIZE = 1024;
 const ZOOM_WHEEL_SENSITIVITY = 0.0015; // per wheel delta unit
+const HIT_RADIUS_PX = 8; // marker hover tolerance, in screen px (scaled by zoom)
 const IDENTITY_VIEW: View = { zoom: 1, panX: 0, panY: 0 };
 
 interface View {
@@ -48,6 +52,7 @@ export function MapViewport() {
   const sizeRef = useRef({ w: 0, h: 0 });
   const rafRef = useRef(0);
   const [cursor, setCursor] = useState<{ x: number; z: number } | null>(null);
+  const [hover, setHover] = useState<{ hit: EventHit; x: number; y: number } | null>(null);
   const [view, setView] = useState<View>(IDENTITY_VIEW);
   const [dragging, setDragging] = useState(false);
 
@@ -275,6 +280,7 @@ export function MapViewport() {
     drag.current = { id: e.pointerId, startX: e.clientX, startY: e.clientY, panX, panY };
     (e.target as Element).setPointerCapture(e.pointerId);
     setDragging(true);
+    setHover(null); // hide the tooltip while panning
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
@@ -296,15 +302,32 @@ export function MapViewport() {
       return;
     }
 
-    // Not dragging → world-coordinate readout.
+    // Not dragging → world-coordinate readout + event-marker hover.
     if (!mapCfg) return;
-    const [px, py] = screenToPixel(e.clientX - rect.left, e.clientY - rect.top, currentTransform(w, h));
+    const cxp = e.clientX - rect.left;
+    const cyp = e.clientY - rect.top;
+    const t = currentTransform(w, h);
+    const [px, py] = screenToPixel(cxp, cyp, t);
     if (px < 0 || px > size || py < 0 || py > size) {
       setCursor(null);
+      setHover(null);
       return;
     }
     const [x, z] = pixelToWorld(px, py, mapCfg);
     setCursor({ x, z });
+
+    // Hit-test event markers against the same visibility the renderer uses; the
+    // radius is constant in screen px (divided by scale → pixel space).
+    const sc = sceneRef.current;
+    const hit = sc.match
+      ? findEventAtPixel(sc.match, px, py, HIT_RADIUS_PX / t.scale, {
+          time: sc.time,
+          humans: sc.layers.humans,
+          bots: sc.layers.bots,
+          events: sc.layers.events,
+        })
+      : null;
+    setHover(hit ? { hit, x: cxp, y: cyp } : null);
   };
 
   const endDrag = (e: React.PointerEvent) => {
@@ -323,18 +346,38 @@ export function MapViewport() {
       <canvas
         ref={canvasRef}
         className="block touch-none"
-        style={{ cursor: dragging ? 'grabbing' : 'grab' }}
+        style={{ cursor: dragging ? 'grabbing' : hover ? 'pointer' : 'grab' }}
         role="img"
         aria-label={mapId ? `${mapId} ${match ? 'match' : 'aggregate'} player journey map` : 'map viewport'}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        onPointerLeave={() => setCursor(null)}
+        onPointerLeave={() => {
+          setCursor(null);
+          setHover(null);
+        }}
       />
 
       {/* Legend — top-right, context-aware key for colors/glyphs (over the map). */}
       {!busy && !failed && mapId && <Legend />}
+
+      {/* Event-marker tooltip — follows the cursor; never intercepts pointer events. */}
+      {hover && (
+        <div
+          className="pointer-events-none absolute z-10 rounded border border-slate-700 bg-slate-900/95 px-2 py-1 text-[11px] shadow-lg"
+          style={{ left: hover.x + 12, top: hover.y + 12 }}
+        >
+          <div className="flex items-center gap-1.5">
+            <span aria-hidden className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.event[hover.hit.cat] }} />
+            <span className="font-semibold text-slate-100">{hover.hit.raw}</span>
+            <span className="text-slate-500">{hover.hit.cat}</span>
+          </div>
+          <div className="mt-0.5 font-mono text-slate-400">
+            {formatSeconds(hover.hit.t)} · {hover.hit.isBot ? 'Bot' : 'Human'}
+          </div>
+        </div>
+      )}
 
       {/* Zoom controls — bottom-left, clear of the coord readout. */}
       <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[11px]">

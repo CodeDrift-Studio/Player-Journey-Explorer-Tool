@@ -61,8 +61,10 @@ Status key: 🔴 open · 🟡 partial/mitigated · 🟢 resolved (kept briefly f
   `render/scene.ts` renders all events regardless of `layers.humans/bots` (and the
   aggregate has no `isBot` flag), so the two view modes behave inconsistently
   (stabilization P0 #5 / ROADMAP M14). The aggregate heatmap is likewise all-actors.
-- 🟡 **No hover tooltip / marker hit-testing / player selection.** Only a
-  world-coordinate cursor readout exists (ROADMAP M10).
+- 🟢 **Event-marker hover tooltips — DONE** (2026-07-03, ROADMAP M10). `lib/hitTest.ts`
+  + a cursor-following overlay show a hovered event's raw name/category/time/owner
+  (zoom-aware, time-gated). **Player click-to-select + dim** (M10's other half) and path
+  hover are still pending.
 - 🟢 **Legend — DONE** (2026-07-03, ROADMAP M11). Context-aware viewport overlay
   (`Legend.tsx`) keyed off `palette.ts`: path colors + event glyphs in match view,
   heatmap intensity scale + glyphs in aggregate view.

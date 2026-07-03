@@ -12,6 +12,20 @@ ISO (YYYY-MM-DD). Not yet versioned/released (pre-1.0).
 ## [Unreleased]
 
 ### Added
+- **Event-marker hover tooltips — ROADMAP M10 (part)** (2026-07-03). Hover a marker to
+  read the event behind it.
+  - **`lib/hitTest.ts`** (new, pure, 5 Vitest tests) — `findEventAtPixel` returns the
+    nearest event within a radius in minimap-pixel space, honoring the renderer's
+    visibility rules (layer toggles + playback time).
+  - **`components/MapViewport.tsx`** — hit-tests in `handlePointerMove` with the radius
+    divided by the view scale (constant screen-px tolerance → zoom-aware, reusing the
+    existing `screenToPixel`), and renders a cursor-following overlay with the event's
+    raw name, category, time, and human/bot owner. `pointer-events:none`; runs only on
+    mouse move, so playback stays isolated (0 re-renders when the mouse is still).
+  - **Verified (headless Chrome):** hovering a marker shows the correct event, empty
+    space clears it, it stays hittable at its recomputed position after zoom, it's
+    time-gated (latest event not hittable at time 0), and it never blocks the canvas.
+  - Player click-to-select + dimming (M10's other half) remains for a later milestone.
 - **Legend — ROADMAP M11** (2026-07-03). Context-aware key overlaid top-right of the
   viewport (`components/Legend.tsx`). Match view: path colors (Human/Bot) + the four
   event glyphs (inline SVGs mirroring `scene.ts` drawMarker); aggregate view: the active
