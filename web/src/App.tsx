@@ -52,10 +52,10 @@ function App() {
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-slate-950 text-slate-200">
-      <header className="flex h-11 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/40 px-3">
-        <div className="flex items-baseline gap-2">
-          <span className="text-sm font-semibold tracking-tight text-slate-100">LILA BLACK</span>
-          <span className="text-xs text-slate-500">Player Journey Explorer</span>
+      <header className="flex h-12 shrink-0 items-center justify-between border-b border-slate-800 bg-slate-900/40 px-4">
+        <div className="flex items-baseline gap-2.5">
+          <span className="text-base font-semibold tracking-tight text-slate-100">LILA BLACK</span>
+          <span className="text-xs text-slate-400">Player Journey Explorer</span>
         </div>
         {manifestStatus === 'ready' && manifest ? (
           <ActiveView />

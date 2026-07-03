@@ -40,10 +40,10 @@ export function MatchFilter() {
         onChange={(e) => setQuery(e.target.value)}
         placeholder="jump to id…"
         aria-label="Search match by id prefix"
-        className="mb-1.5 w-full rounded border border-slate-800 bg-slate-950 px-2 py-1 text-xs text-slate-200 placeholder:text-slate-600 focus:border-indigo-600 focus:outline-none"
+        className="mb-2 w-full rounded-md border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-[0.8125rem] text-slate-200 placeholder:text-slate-600 focus:border-indigo-600 focus:outline-none"
       />
 
-      <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1">
+      <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-1">
         {/* Aggregate (overview) is a first-class option. */}
         <button className={optionButton(matchId === null)} onClick={() => setMatch(null)}>
           All matches (aggregate)

@@ -27,13 +27,13 @@ export function Timeline() {
   const stats = computePlaybackStats(match, time, duration, speed);
 
   return (
-    <footer className="flex h-12 shrink-0 items-center gap-3 border-t border-slate-800 bg-slate-900/40 px-3 text-xs">
+    <footer className="flex h-14 shrink-0 items-center gap-4 border-t border-slate-800 bg-slate-900/40 px-4 text-[0.8125rem]">
       <button
         type="button"
         onClick={toggle}
         disabled={!enabled}
         aria-label={isPlaying ? 'Pause' : 'Play'}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-slate-700 bg-slate-800 text-slate-200 transition-colors hover:enabled:bg-slate-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-40"
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-slate-700 bg-slate-800 text-sm text-slate-200 transition-colors hover:enabled:bg-slate-700 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 disabled:cursor-not-allowed disabled:opacity-40"
       >
         {isPlaying ? '❚❚' : '▶'}
       </button>
@@ -53,17 +53,17 @@ export function Timeline() {
             value={time}
             onChange={(e) => setTime(Number(e.target.value))}
             aria-label="Timeline scrubber"
-            className="h-1 min-w-0 flex-1 cursor-pointer accent-indigo-500"
+            className="h-1.5 min-w-0 flex-1 cursor-pointer accent-indigo-500"
           />
 
-          <div className="flex shrink-0 items-center gap-0.5" role="group" aria-label="Playback speed">
+          <div className="flex shrink-0 items-center gap-1" role="group" aria-label="Playback speed">
             {PLAYBACK_SPEEDS.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => setSpeed(s)}
                 aria-pressed={speed === s}
-                className={`rounded px-1.5 py-0.5 font-mono transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 ${
+                className={`rounded-md px-2 py-1 font-mono transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-400 ${
                   speed === s
                     ? 'bg-indigo-600 text-white'
                     : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'

@@ -23,23 +23,23 @@ const EVENT_LABEL: Record<EventCategory, string> = {
 
 function Row({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="flex items-baseline justify-between gap-2 py-0.5">
-      <span className="text-slate-500">{label}</span>
-      <span className="font-mono tabular-nums text-slate-300">{value}</span>
+    <div className="flex items-baseline justify-between gap-2 py-1">
+      <span className="text-slate-400">{label}</span>
+      <span className="font-mono font-semibold tabular-nums text-slate-100">{value}</span>
     </div>
   );
 }
 
 function EventRows({ events }: { events: EventBreakdown }) {
   return (
-    <div className="mt-1 border-t border-slate-800 pt-1">
+    <div className="mt-1.5 border-t border-slate-800 pt-1.5">
       {EVENT_CATEGORIES.map((cat) => (
-        <div key={cat} className="flex items-center justify-between gap-2 py-0.5">
-          <span className="flex items-center gap-1.5 text-slate-500">
-            <span aria-hidden className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.event[cat] }} />
+        <div key={cat} className="flex items-center justify-between gap-2 py-1">
+          <span className="flex items-center gap-2 text-slate-400">
+            <span aria-hidden className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS.event[cat] }} />
             {EVENT_LABEL[cat]}
           </span>
-          <span className="font-mono tabular-nums text-slate-300">{events[cat].toLocaleString()}</span>
+          <span className="font-mono font-semibold tabular-nums text-slate-100">{events[cat].toLocaleString()}</span>
         </div>
       ))}
     </div>
@@ -57,7 +57,7 @@ export function StatsPanel() {
   } else if (match) {
     const s = matchStats(match);
     body = (
-      <div className="text-xs">
+      <div className="text-[0.8125rem]">
         <Row label="Players" value={`${s.players}  (${s.humans}H · ${s.bots}B)`} />
         <Row label="Duration" value={formatSeconds(s.durationMs)} />
         <Row label="Points" value={s.points.toLocaleString()} />
@@ -68,7 +68,7 @@ export function StatsPanel() {
   } else if (aggregate) {
     const s = aggregateStats(aggregate);
     body = (
-      <div className="text-xs">
+      <div className="text-[0.8125rem]">
         <Row label="Points" value={s.points.toLocaleString()} />
         <Row label="Events" value={s.totalEvents.toLocaleString()} />
         <EventRows events={s.events} />

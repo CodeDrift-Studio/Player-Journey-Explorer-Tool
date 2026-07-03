@@ -365,29 +365,29 @@ export function MapViewport() {
       {/* Event-marker tooltip — follows the cursor; never intercepts pointer events. */}
       {hover && (
         <div
-          className="pointer-events-none absolute z-10 rounded border border-slate-700 bg-slate-900/95 px-2 py-1 text-[11px] shadow-lg"
+          className="pointer-events-none absolute z-10 rounded-md border border-slate-700 bg-slate-900/95 px-3 py-2 text-xs leading-relaxed shadow-lg"
           style={{ left: hover.x + 12, top: hover.y + 12 }}
         >
-          <div className="flex items-center gap-1.5">
-            <span aria-hidden className="h-2 w-2 rounded-full" style={{ backgroundColor: COLORS.event[hover.hit.cat] }} />
+          <div className="flex items-center gap-2">
+            <span aria-hidden className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: COLORS.event[hover.hit.cat] }} />
             <span className="font-semibold text-slate-100">{hover.hit.raw}</span>
-            <span className="text-slate-500">{hover.hit.cat}</span>
+            <span className="text-slate-400">{hover.hit.cat}</span>
           </div>
-          <div className="mt-0.5 font-mono text-slate-400">
+          <div className="mt-1 font-mono text-slate-400">
             {formatSeconds(hover.hit.t)} · {hover.hit.isBot ? 'Bot' : 'Human'}
           </div>
         </div>
       )}
 
       {/* Zoom controls — bottom-left, clear of the coord readout. */}
-      <div className="absolute bottom-2 left-2 flex items-center gap-1 text-[11px]">
-        <span className="rounded border border-slate-800 bg-slate-900/80 px-2 py-1 font-mono text-slate-400">
+      <div className="absolute bottom-2 left-2 flex items-center gap-1 text-xs">
+        <span className="rounded-md border border-slate-800 bg-slate-900/80 px-2.5 py-1.5 font-mono text-slate-400">
           {(view.zoom * 100).toFixed(0)}%
         </span>
         {zoomed && (
           <button
             onClick={() => setView(IDENTITY_VIEW)}
-            className="rounded border border-slate-800 bg-slate-900/80 px-2 py-1 text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-100"
+            className="rounded-md border border-slate-800 bg-slate-900/80 px-2.5 py-1.5 text-slate-400 transition-colors hover:border-slate-600 hover:text-slate-100"
           >
             Reset
           </button>
@@ -405,7 +405,7 @@ export function MapViewport() {
           <span className="text-xs text-red-400">Failed to load view{error ? `: ${error}` : ''}</span>
           <button
             onClick={retry}
-            className="rounded border border-slate-700 bg-slate-900/80 px-3 py-1 text-xs text-slate-200 transition-colors hover:border-slate-500 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
+            className="rounded-md border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs text-slate-200 transition-colors hover:border-slate-500 hover:text-white focus-visible:outline-2 focus-visible:outline-indigo-500"
           >
             Retry
           </button>
@@ -414,7 +414,7 @@ export function MapViewport() {
 
       {/* World-coordinate readout (the units designers work in). */}
       {cursor && (
-        <div className="pointer-events-none absolute bottom-2 right-2 rounded border border-slate-800 bg-slate-900/80 px-2 py-1 font-mono text-[11px] text-slate-400">
+        <div className="pointer-events-none absolute bottom-2 right-2 rounded-md border border-slate-800 bg-slate-900/80 px-2.5 py-1.5 font-mono text-xs text-slate-400">
           x {cursor.x.toFixed(0)} · z {cursor.z.toFixed(0)}
         </div>
       )}

@@ -11,7 +11,28 @@ body,
   margin: 0;
 }
 
+/* Root font size anchors every rem-based Tailwind utility (fonts, padding, gaps,
+   panel/control heights). Held at the 16px baseline for 1080p, it steps up gently
+   on genuinely large native desktops so the whole UI scales as one system —
+   comfortable to read on 2K/4K without feeling oversized on 1080p. (Scaled 4K
+   desktops report fewer CSS px, so OS scaling covers that case.) */
+:root {
+  font-size: 16px;
+}
+@media (min-width: 2560px) {
+  :root {
+    font-size: 17px;
+  }
+}
+@media (min-width: 3840px) {
+  :root {
+    font-size: 18px;
+  }
+}
+
 body {
   background-color: #020617; /* slate-950 */
   color: #e2e8f0;            /* slate-200 */
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
